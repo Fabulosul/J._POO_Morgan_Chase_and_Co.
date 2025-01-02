@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.poo.checker.Checker;
 import org.poo.checker.CheckerConstants;
 import org.poo.fileio.ObjectInput;
+import org.poo.main.bank.BankManager;
+import org.poo.utils.Utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -92,9 +94,14 @@ public final class Main {
          * output.add(objectNode);
          *
          */
+        // Open the bank and start processing commands
+        BankManager.openBank(inputData, output);
 
         ObjectWriter objectWriter = objectMapper.writerWithDefaultPrettyPrinter();
         objectWriter.writeValue(new File(filePath2), output);
+
+        // Reset the random generator
+        Utils.resetRandom();
     }
 
     /**
