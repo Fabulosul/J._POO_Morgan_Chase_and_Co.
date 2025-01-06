@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommerciantInput;
 import org.poo.fileio.ExchangeInput;
+import org.poo.main.cashback.Commerciant;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +22,7 @@ public final class Bank {
     private Map<String, Map<String, Double>> exchangeRateMap;
     // A list that stores the commerciants.
     private List<CommerciantInput> commerciants;
+    private Map<String, Commerciant> nameToCommerciantMap;
     // A map that stores the users by email to enable faster searching.
     private Map<String, User> emailToUserMap;
 
@@ -44,6 +46,12 @@ public final class Bank {
             exchangeRateMap.get(toCurrency).put(fromCurrency, 1 / rate);
         }
         this.commerciants = commerciants;
+        this.nameToCommerciantMap = new HashMap<>();
+        for (CommerciantInput commerciant : commerciants) {
+            Commerciant newCommerciant = new Commerciant(commerciant.getCommerciant(), commerciant.getType(),
+                    commerciant.getCashbackStrategy());
+            nameToCommerciantMap.put(newCommerciant.getName(), newCommerciant);
+        }
         this.emailToUserMap = new HashMap<>();
         // Add all users to the emailToUserMap to enable faster searching by email
         for (User user : users) {
@@ -256,5 +264,9 @@ public final class Bank {
             }
         }
         return null;
+    }
+
+    public Commerciant getCommerciantByName(final String commerciant) {
+        return nameToCommerciantMap.get(commerciant);
     }
 }

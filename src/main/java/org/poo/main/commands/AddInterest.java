@@ -6,10 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
-import org.poo.main.bank.Bank;
-import org.poo.main.bank.BankAccount;
-import org.poo.main.bank.SavingsBankAccount;
-import org.poo.main.bank.User;
+import org.poo.main.bank.*;
 
 @Getter
 @Setter
@@ -42,7 +39,9 @@ public final class AddInterest extends Command implements CommandInterface {
             return;
         }
         if (bankAccount.isSavingsAccount()) {
-            ((SavingsBankAccount) bankAccount).addInterest();
+            double interestIncome = ((SavingsBankAccount) bankAccount).addInterest();
+            String currency = bankAccount.getCurrency();
+            registerSuccessfullTransaction(user, interestIncome, currency);
         } else {
             addErrorToOutput();
         }
@@ -66,5 +65,15 @@ public final class AddInterest extends Command implements CommandInterface {
         errorNode.set("output", outputNode);
         errorNode.put("timestamp", getTimestamp());
         output.add(errorNode);
+    }
+
+    private void registerSuccessfullTransaction(User user, double amount, String currency) {
+        Transaction transaction = new Transaction
+                .TransactionBuilder(getTimestamp(), "Interest rate income")
+                .amount(amount)
+                .currency(currency)
+                .separateAmountAndCurrency(true)
+                .build();
+        user.addTransaction(transaction);
     }
 }

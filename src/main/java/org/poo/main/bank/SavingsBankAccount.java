@@ -28,8 +28,10 @@ public final class SavingsBankAccount extends BankAccount {
     /**
      * Helper method used to add interest to the account balance.
      */
-    public void addInterest() {
+    public double addInterest() {
+        double interestIncome = getBalance() * interestRate;
         setBalance(getBalance() + getBalance() * interestRate);
+        return interestIncome;
     }
 
 

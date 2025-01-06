@@ -1,5 +1,8 @@
 package org.poo.main.commands;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
@@ -12,10 +15,12 @@ import org.poo.main.bank.User;
 @Setter
 public final class SendMoney extends Command implements CommandInterface {
     private Bank bank;
+    private ArrayNode output;
 
-    public SendMoney(final Bank bank, final CommandInput command) {
+    public SendMoney(final Bank bank, final CommandInput command, final ArrayNode output) {
         super(command);
         this.bank = bank;
+        this.output = output;
     }
 
     /**
@@ -33,6 +38,10 @@ public final class SendMoney extends Command implements CommandInterface {
      */
     @Override
     public void execute() {
+        if(getReceiver().isEmpty()) {
+            addErrorToOutput("User not found");
+            return;
+        }
         User sender = bank.getUserByMail(getEmail());
         if (sender == null) {
             return;
@@ -137,5 +146,19 @@ public final class SendMoney extends Command implements CommandInterface {
                 .build();
         receiver.addTransaction(receiverTransaction);
         receiverAccount.addTransaction(receiverTransaction);
+    }
+
+    public void addErrorToOutput(String description) {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode objectNode = mapper.createObjectNode();
+        objectNode.put("command", "sendMoney");
+
+        ObjectNode outputNode = mapper.createObjectNode();
+        outputNode.put("description", description);
+        outputNode.put("timestamp", getTimestamp());
+
+        objectNode.set("output", outputNode);
+        objectNode.put("timestamp", getTimestamp());
+        output.add(objectNode);
     }
 }

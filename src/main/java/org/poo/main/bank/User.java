@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.UserInput;
+import org.poo.main.serviceplans.*;
 
 
 import java.util.ArrayList;
@@ -19,6 +20,9 @@ public final class User {
     private String firstName;
     private String lastName;
     private String email;
+    private int age;
+    private String occupation;
+    private UserPlan servicePlan;
     // A list of bank accounts that the user has opened
     private List<BankAccount> bankAccounts;
     // A map that maps the IBAN of a bank account to a bank account object
@@ -33,11 +37,18 @@ public final class User {
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();
         this.email = user.getEmail();
+        String birthDate = user.getBirthDate();
+        String[] values = birthDate.split("-");
+        int year = Integer.parseInt(values[0]);
+        this.age = 2025 - year;
+        this.occupation = user.getOccupation();
+        this.servicePlan = this.occupation.equals("student") ? new StudentPlan() : new StandardUserPlan();
         this.bankAccounts = new ArrayList<>();
         this.ibanToAccountMap = new HashMap<>();
         this.aliasToAccountMap = new HashMap<>();
         ObjectMapper mapper = new ObjectMapper();
         this.transactionsReport = mapper.createArrayNode();
+
     }
 
     /**
@@ -125,5 +136,32 @@ public final class User {
         ObjectNode transactionNode = mapper.convertValue(transaction, ObjectNode.class);
         transactionsReport.add(transactionNode);
     }
+
+    public void changeServicePlan(final String newPlanType) {
+        switch (newPlanType) {
+            case "student":
+                this.servicePlan = new StudentPlan();
+                break;
+            case "standard":
+                this.servicePlan = new StandardUserPlan();
+                break;
+            case "silver":
+                this.servicePlan = new SilverUserPlan();
+                break;
+            case "gold":
+                this.servicePlan = new GoldUserPlan();
+                break;
+        }
+    }
+
+    public BankAccount findClassicAccountByCurrency(final String currency) {
+        for (BankAccount account : bankAccounts) {
+            if (account.getCurrency().equals(currency) && !account.isSavingsAccount()) {
+                return account;
+            }
+        }
+        return null;
+    }
+
 
 }

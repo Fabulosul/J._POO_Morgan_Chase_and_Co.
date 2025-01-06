@@ -37,11 +37,14 @@ public final class CommandFactory {
             case "deleteCard" -> new DeleteCard(bank, command);
             case "addFunds" -> new AddFunds(bank, command);
             case "payOnline" -> new PayOnline(bank, command, output);
-            case "sendMoney" -> new SendMoney(bank, command);
+            case "sendMoney" -> new SendMoney(bank, command, output);
             case "splitPayment" -> new SplitPayment(bank, command);
             case "printTransactions" -> new PrintTransactions(bank, command, output);
             case "report" -> new Report(bank, command, output);
             case "spendingsReport" -> new SpendingsReport(bank, command, output);
+            case "withdrawSavings" -> new WithdrawSavings(bank, command, output);
+            case "upgradePlan" -> new UpgradePlan(bank, command, output);
+            case "cashWithdrawal" -> new CashWithdrawal(bank, command, output);
             default -> null;
         };
     }

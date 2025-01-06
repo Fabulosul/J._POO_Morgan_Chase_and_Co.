@@ -11,6 +11,8 @@ import org.poo.main.bank.BankAccount;
 import org.poo.main.bank.Card;
 import org.poo.main.bank.User;
 import org.poo.main.bank.Transaction;
+import org.poo.main.cashback.Commerciant;
+import org.poo.main.cashback.PaymentDetails;
 
 
 @Getter
@@ -62,6 +64,9 @@ public final class PayOnline extends Command implements CommandInterface {
             registerTransaction(user, bankAccount, card, "The card is frozen");
             return;
         }
+        if(getAmount() <= 0) {
+            return;
+        }
         boolean hasSufficientFunds = bankAccount.payOnline(bank, getAmount(), getCurrency());
         if (hasSufficientFunds) {
             registerTransaction(user, bankAccount, card, "Card payment");
@@ -74,6 +79,9 @@ public final class PayOnline extends Command implements CommandInterface {
                 bankAccount.addCard(newCard);
                 registerTransaction(user, bankAccount, newCard, "New card created");
             }
+            Commerciant commerciant = bank.getCommerciantByName(getCommerciant());
+            PaymentDetails paymentDetails = new PaymentDetails(getAmount(), getCurrency(), commerciant);
+            bankAccount.notifyCashbackObservers(paymentDetails);
         } else {
             registerTransaction(user, bankAccount, card, "Insufficient funds");
         }
@@ -103,9 +111,10 @@ public final class PayOnline extends Command implements CommandInterface {
             case "Card payment":
                 double convertedAmount = bank.convertCurrency(getAmount(), getCurrency(),
                         bankAccount.getCurrency());
+                double roundedAmount = Math.round(convertedAmount * 100.0) / 100.0;
                 transaction = new Transaction
                         .TransactionBuilder(getTimestamp(), description)
-                        .amount(convertedAmount)
+                        .amount(roundedAmount)
                         .commerciant(getCommerciant())
                         .build();
                 user.addTransaction(transaction);

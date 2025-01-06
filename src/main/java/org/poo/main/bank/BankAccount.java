@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.Setter;
+import org.poo.main.cashback.CashbackObserver;
+import org.poo.main.cashback.PaymentDetails;
+import org.poo.main.cashback.Voucher;
 import org.poo.utils.Utils;
 
 import java.util.ArrayList;
@@ -26,6 +29,10 @@ public class BankAccount {
     private double minBalance;
     // Field that stores the transactions of the current account
     private ArrayNode transactions;
+    private List<CashbackObserver> cashbackObservers;
+    private List<Voucher> cashbackVouchers;
+    private int nrOfTransactions;
+
 
     public BankAccount(final String currency) {
         this.iban = Utils.generateIBAN();
@@ -37,6 +44,9 @@ public class BankAccount {
         this.minBalance = 0;
         ObjectMapper mapper = new ObjectMapper();
         this.transactions = mapper.createArrayNode();
+        this.cashbackObservers = new ArrayList<>();
+        this.cashbackVouchers = new ArrayList<>();
+        this.nrOfTransactions = 0;
     }
 
     /**
@@ -86,6 +96,7 @@ public class BankAccount {
      */
     public final void addMoney(final double amount) {
         balance += amount;
+        balance = Math.round(balance * 100.0) / 100.0;
     }
 
     /**
@@ -102,6 +113,7 @@ public class BankAccount {
             return false;
         }
         balance -= amount;
+        balance = Math.round(balance * 100.0) / 100.0;
         return true;
     }
 
@@ -122,11 +134,11 @@ public class BankAccount {
      */
     public final boolean payOnline(final Bank bank, final double amount,
                                    final String paymentCurrency) {
-        if (getCurrency().equals(paymentCurrency)) {
-            return deductMoney(amount);
-        }
-        double convertedAmount = bank.convertCurrency(amount, paymentCurrency, getCurrency());
-        return deductMoney(convertedAmount);
+        double amountInRon = bank.convertCurrency(amount, paymentCurrency, "RON");
+        double amountWithCommission = calculateAmountWithCommission(bank, amountInRon);
+        double convertedAmountWithCommission = bank.convertCurrency(amountWithCommission,
+                "RON", getCurrency());
+        return deductMoney(convertedAmountWithCommission);
     }
 
     /**
@@ -150,10 +162,16 @@ public class BankAccount {
      */
     public final boolean sendMoney(final Bank bank, final BankAccount receiverAccount,
                                    final double amount) {
-        if (amount > balance) {
+        double amountInRon = bank.convertCurrency(amount, currency,
+                "RON");
+        double amountWithCommission = calculateAmountWithCommission(bank, amountInRon);
+        double convertedAmountWithCommission = bank.convertCurrency(amountWithCommission,
+                "RON", currency);
+
+        if (convertedAmountWithCommission > balance) {
             return false;
         }
-        deductMoney(amount);
+        deductMoney(convertedAmountWithCommission);
 
         if (receiverAccount.getCurrency().equals(currency)) {
             receiverAccount.addMoney(amount);
@@ -184,10 +202,10 @@ public class BankAccount {
     public final boolean hasSufficientFunds(final double amount, final String paymentCurrency,
                                             final Bank bank) {
         if (currency.equals(paymentCurrency)) {
-            return amount < balance;
+            return amount <= balance;
         }
         double convertedAmount = bank.convertCurrency(amount, paymentCurrency, currency);
-        return convertedAmount < balance;
+        return convertedAmount <= balance;
     }
 
     /**
@@ -202,5 +220,36 @@ public class BankAccount {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode transactionNode = mapper.convertValue(transaction, ObjectNode.class);
         transactions.add(transactionNode);
+    }
+
+    public double calculateAmountWithCommission(Bank bank, final double amount) {
+        User user = bank.getUserByAccount(iban);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found");
+        }
+        double commission = user.getServicePlan().calculateCommission(amount);
+        return amount + commission;
+    }
+
+    public void addCashbackObserver(final CashbackObserver observer) {
+        cashbackObservers.add(observer);
+    }
+
+    public void removeCashbackObserver(final CashbackObserver observer) {
+        cashbackObservers.remove(observer);
+    }
+
+    public void notifyCashbackObservers(PaymentDetails paymentDetails) {
+        for (CashbackObserver observer : cashbackObservers) {
+            observer.update(paymentDetails);
+        }
+    }
+
+    public void addVoucher(final Voucher voucher) {
+        cashbackVouchers.add(voucher);
+    }
+
+    public void removeVoucher(final Voucher voucher) {
+        cashbackVouchers.remove(voucher);
     }
 }

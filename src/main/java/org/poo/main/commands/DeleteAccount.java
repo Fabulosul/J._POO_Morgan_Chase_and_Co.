@@ -10,6 +10,7 @@ import org.poo.main.bank.Bank;
 import org.poo.main.bank.BankAccount;
 import org.poo.main.bank.Transaction;
 import org.poo.main.bank.User;
+import org.poo.main.cashback.CashbackObserver;
 
 @Getter
 @Setter
@@ -45,6 +46,11 @@ public final class DeleteAccount extends Command implements CommandInterface {
         }
 
         if (bankAccount.getBalance() == 0) {
+            // remove observers
+            for (int i = 0; i < bankAccount.getCashbackObservers().size(); i++) {
+                CashbackObserver observer = bankAccount.getCashbackObservers().get(i);
+                bankAccount.removeCashbackObserver(observer);
+            }
             user.removeBankAccount(bankAccount);
             addMessageToOutput("success");
         } else {

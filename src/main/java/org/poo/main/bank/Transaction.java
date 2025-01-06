@@ -15,10 +15,16 @@ import java.util.List;
 public final class Transaction {
     private int timestamp;
     private String account;
+    @JsonProperty("accountIBAN")
+    private String accountIban;
     private String card;
     private String cardHolder;
     private String commerciant;
     private String description;
+    private String newPlanType;
+    private String splitPaymentType;
+    @JsonIgnore
+    private boolean currencyWithoutAmount;
     // This annotation is used to give a custom name to the field in the JSON output.
     @JsonProperty("senderIBAN")
     private String senderIban;
@@ -34,6 +40,7 @@ public final class Transaction {
     @JsonIgnore
     private boolean separateAmountAndCurrency;
     private List<String> involvedAccounts;
+    private List<Double> amountForUsers;
 
     /**
      * Getter used to return the amount of the transaction in the
@@ -50,7 +57,7 @@ public final class Transaction {
      */
     @JsonProperty("amount")
     public Object getAmount() {
-        if (currency == null && amount == 0) {
+        if ((currency == null && amount == 0) || currencyWithoutAmount) {
             return null;
         }
         if (currency != null && amount != 0) {
@@ -73,7 +80,7 @@ public final class Transaction {
      */
     @JsonProperty("currency")
     public String getCurrency() {
-        if (separateAmountAndCurrency) {
+        if (separateAmountAndCurrency || currencyWithoutAmount) {
             return currency;
         }
         return null;
@@ -82,10 +89,14 @@ public final class Transaction {
     private Transaction(final TransactionBuilder builder) {
         this.timestamp = builder.timestamp;
         this.account = builder.account;
+        this.accountIban = builder.accountIban;
         this.card = builder.card;
         this.cardHolder = builder.cardHolder;
         this.commerciant = builder.commerciant;
         this.description = builder.description;
+        this.newPlanType = builder.newPlanType;
+        this.currencyWithoutAmount = builder.currencyWithoutAmount;
+        this.splitPaymentType = builder.splitPaymentType;
         this.senderIban = builder.senderIban;
         this.receiverIban = builder.receiverIban;
         this.currency = builder.currency;
@@ -94,6 +105,7 @@ public final class Transaction {
         this.amount = builder.amount;
         this.separateAmountAndCurrency = builder.separateAmountAndCurrency;
         this.involvedAccounts = builder.involvedAccounts;
+        this.amountForUsers = builder.amountForUsers;
     }
 
     @Getter
@@ -101,10 +113,14 @@ public final class Transaction {
     public static final class TransactionBuilder {
         private int timestamp;
         private String account;
+        private String accountIban;
         private String card;
         private String cardHolder;
         private String commerciant;
         private String description;
+        private String newPlanType;
+        private boolean currencyWithoutAmount;
+        private String splitPaymentType;
         private String senderIban;
         private String receiverIban;
         private String currency;
@@ -113,6 +129,7 @@ public final class Transaction {
         private double amount;
         private boolean separateAmountAndCurrency;
         private List<String> involvedAccounts;
+        private List<Double> amountForUsers;
 
         public TransactionBuilder(final int timestamp, final String description) {
             this.timestamp = timestamp;
@@ -128,6 +145,11 @@ public final class Transaction {
          */
         public TransactionBuilder account(final String iban) {
             this.account = iban;
+            return this;
+        }
+
+        public TransactionBuilder accountIban(final String iban) {
+            this.accountIban = iban;
             return this;
         }
 
@@ -262,6 +284,26 @@ public final class Transaction {
          */
         public TransactionBuilder involvedAccounts(final List<String> involvedAccountsList) {
             this.involvedAccounts = involvedAccountsList;
+            return this;
+        }
+
+        public TransactionBuilder newPlanType(final String newPlanName) {
+            this.newPlanType = newPlanName;
+            return this;
+        }
+
+        public TransactionBuilder splitPaymentType(final String splitPaymentTypeName) {
+            this.splitPaymentType = splitPaymentTypeName;
+            return this;
+        }
+
+        public TransactionBuilder amountForUsers(final List<Double> amountForUsersList) {
+            this.amountForUsers = amountForUsersList;
+            return this;
+        }
+
+        public TransactionBuilder currencyWithoutAmount(final boolean currencyWithoutAmount) {
+            this.currencyWithoutAmount = currencyWithoutAmount;
             return this;
         }
 

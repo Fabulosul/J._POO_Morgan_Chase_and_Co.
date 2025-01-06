@@ -8,6 +8,8 @@ import org.poo.main.bank.BankAccount;
 import org.poo.main.bank.SavingsBankAccount;
 import org.poo.main.bank.User;
 import org.poo.main.bank.Transaction;
+import org.poo.main.cashback.NrOfTransactionsObserver;
+import org.poo.main.cashback.SpendingThresholdObserver;
 
 @Getter
 @Setter
@@ -35,6 +37,10 @@ public final class AddAccount extends Command implements CommandInterface {
         } else {
             bankAccount = new SavingsBankAccount(getCurrency(), getInterestRate());
         }
+        SpendingThresholdObserver spendingThresholdObserver = new SpendingThresholdObserver(bank, bankAccount);
+        bankAccount.addCashbackObserver(spendingThresholdObserver);
+        NrOfTransactionsObserver nrOfTransactionsObserver = new NrOfTransactionsObserver(bank, bankAccount);
+        bankAccount.addCashbackObserver(nrOfTransactionsObserver);
         user.addBankAccount(bankAccount);
 
         registerTransaction(user, bankAccount);
