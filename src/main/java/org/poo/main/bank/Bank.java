@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.poo.fileio.CommerciantInput;
 import org.poo.fileio.ExchangeInput;
 import org.poo.main.cashback.Commerciant;
+import org.poo.main.splitpayment.SplitPaymentDetails;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,6 +26,7 @@ public final class Bank {
     private Map<String, Commerciant> nameToCommerciantMap;
     // A map that stores the users by email to enable faster searching.
     private Map<String, User> emailToUserMap;
+    private List<SplitPaymentDetails> splitPayments;
 
     public Bank(final List<User> users, final List<ExchangeInput> exchangeRates,
                 final List<CommerciantInput> commerciants) {
@@ -57,6 +59,7 @@ public final class Bank {
         for (User user : users) {
             addUserByMail(user.getEmail(), user);
         }
+        this.splitPayments = new ArrayList<>();
     }
 
     /**
@@ -268,5 +271,40 @@ public final class Bank {
 
     public Commerciant getCommerciantByName(final String commerciant) {
         return nameToCommerciantMap.get(commerciant);
+    }
+
+    public void addSplitPayment(final SplitPaymentDetails splitPaymentDetails) {
+        splitPayments.add(splitPaymentDetails);
+    }
+
+    public void removeSplitPayment(final SplitPaymentDetails splitPaymentDetails) {
+        splitPayments.remove(splitPaymentDetails);
+    }
+
+    public void acceptSplitPayment(final User user, String splitPaymentType) {
+        SplitPaymentDetails.SplitPaymentType paymentType;
+        paymentType = splitPaymentType.equals("custom")
+                ? SplitPaymentDetails.SplitPaymentType.CUSTOM
+                : SplitPaymentDetails.SplitPaymentType.EQUAL;
+        for (SplitPaymentDetails splitPayment : splitPayments) {
+            if (splitPayment.getPaymentType() == paymentType) {
+                splitPayment.acceptPayment(user);
+                return;
+            }
+        }
+    }
+
+    public void rejectSplitPayment(final User user, String splitPaymentType) {
+        SplitPaymentDetails.SplitPaymentType paymentType;
+        paymentType = splitPaymentType.equals("custom")
+                ? SplitPaymentDetails.SplitPaymentType.CUSTOM
+                : SplitPaymentDetails.SplitPaymentType.EQUAL;
+        for (SplitPaymentDetails splitPayment : splitPayments) {
+            if (splitPayment.getPaymentType() == paymentType) {
+                splitPayment.rejectPayment(user);
+                removeSplitPayment(splitPayment);
+                return;
+            }
+        }
     }
 }

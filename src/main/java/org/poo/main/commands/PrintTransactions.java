@@ -9,6 +9,10 @@ import org.poo.fileio.CommandInput;
 import org.poo.main.bank.Bank;
 import org.poo.main.bank.User;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
 @Getter
 @Setter
 public final class PrintTransactions extends Command implements CommandInterface {
@@ -31,6 +35,9 @@ public final class PrintTransactions extends Command implements CommandInterface
     public void execute() {
         User user = bank.getUserByMail(getEmail());
 
+        ArrayNode transactionsReport = user.getTransactionsReport();
+        sortTransactionsByTimestamp(transactionsReport);
+
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode objectNode = mapper.createObjectNode();
         objectNode.put("command", "printTransactions");
@@ -38,5 +45,21 @@ public final class PrintTransactions extends Command implements CommandInterface
         objectNode.put("timestamp", getTimestamp());
 
         output.add(objectNode);
+    }
+
+    public void sortTransactionsByTimestamp(ArrayNode transactionsReport) {
+        List<ObjectNode> objectNodeList = new ArrayList<>();
+        for (int i = 0; i < transactionsReport.size(); i++) {
+            objectNodeList.add((ObjectNode) transactionsReport.get(i));
+        }
+        objectNodeList.sort((o1, o2) -> {
+            int timestamp1 = o1.get("timestamp").asInt();
+            int timestamp2 = o2.get("timestamp").asInt();
+            return timestamp1 - timestamp2;
+        });
+        transactionsReport.removeAll();
+        for (ObjectNode objectNode : objectNodeList) {
+            transactionsReport.add(objectNode);
+        }
     }
 }

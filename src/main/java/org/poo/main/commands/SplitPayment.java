@@ -7,6 +7,7 @@ import org.poo.main.bank.Bank;
 import org.poo.main.bank.BankAccount;
 import org.poo.main.bank.Transaction;
 import org.poo.main.bank.User;
+import org.poo.main.splitpayment.SplitPaymentDetails;
 
 @Getter
 @Setter
@@ -32,42 +33,32 @@ public final class SplitPayment extends Command implements CommandInterface {
      */
     @Override
     public void execute() {
-        double splitAmount = getAmount() / getAccounts().size();
-        BankAccount invalidAccount = findInvalidAccount(splitAmount);
-        String invalidAccountIban = invalidAccount != null
-                ? invalidAccount.getIban() : null;
-
-        if (invalidAccount != null) {
-            addTransactionErrors(invalidAccountIban, splitAmount);
+        String splitPaymentType = getSplitPaymentType();
+        SplitPaymentDetails splitPayment;
+        if (splitPaymentType.equals("custom")) {
+            splitPayment = new SplitPaymentDetails(bank, getAmount(),
+                    SplitPaymentDetails.SplitPaymentType.CUSTOM, getCurrency(), getTimestamp());
         } else {
-            addTransactions(splitAmount);
+            splitPayment = new SplitPaymentDetails(bank, getAmount(),
+                    SplitPaymentDetails.SplitPaymentType.EQUAL, getCurrency(), getTimestamp());
         }
-    }
-
-    /**
-     * Method used to find out if there is an account in the list of accounts
-     * that are supposed to make the split payment that does not have sufficient funds
-     * or does not exist.
-     * It iterates through the list of accounts and checks if each account has sufficient
-     * funds for the split payment. If an account does not have sufficient funds, it returns
-     * that account.
-     *
-     * @param splitAmount -> the amount to be paid to each account
-     * @return the account that does not have sufficient funds for the split payment and exist
-     * or null if all accounts have sufficient funds
-     */
-    private BankAccount findInvalidAccount(final double splitAmount) {
-        BankAccount invalidAccount = null;
-        for (String account : getAccounts()) {
-            BankAccount bankAccount = bank.findAccountByIban(account);
+        for(int i = 0; i < getAccounts().size(); i++) {
+            BankAccount bankAccount = bank.findAccountByIban(getAccounts().get(i));
             if (bankAccount == null) {
-                return null;
+                // One of the account is not valid
+                return;
             }
-            if (!bankAccount.hasSufficientFunds(splitAmount, getCurrency(), bank)) {
-                invalidAccount = bankAccount;
+            User user = bank.getUserByAccount(bankAccount.getIban());
+            if (user == null) {
+                return;
+            }
+            if(splitPaymentType.equals("custom")) {
+                splitPayment.addParticipant(user, bankAccount, getAmountForUsers().get(i));
+            } else {
+                splitPayment.addParticipant(user, bankAccount, getAmount() / getAccounts().size());
             }
         }
-        return invalidAccount;
+        bank.addSplitPayment(splitPayment);
     }
 
     /**
