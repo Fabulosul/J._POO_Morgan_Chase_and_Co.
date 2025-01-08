@@ -96,7 +96,6 @@ public class BankAccount {
      */
     public final void addMoney(final double amount) {
         balance += amount;
-        balance = Math.round(balance * 100.0) / 100.0;
     }
 
     /**
@@ -113,7 +112,6 @@ public class BankAccount {
             return false;
         }
         balance -= amount;
-        balance = Math.round(balance * 100.0) / 100.0;
         return true;
     }
 

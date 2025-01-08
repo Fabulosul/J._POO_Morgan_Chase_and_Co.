@@ -111,10 +111,9 @@ public final class PayOnline extends Command implements CommandInterface {
             case "Card payment":
                 double convertedAmount = bank.convertCurrency(getAmount(), getCurrency(),
                         bankAccount.getCurrency());
-                double roundedAmount = Math.round(convertedAmount * 100.0) / 100.0;
                 transaction = new Transaction
                         .TransactionBuilder(getTimestamp(), description)
-                        .amount(roundedAmount)
+                        .amount(convertedAmount)
                         .commerciant(getCommerciant())
                         .build();
                 user.addTransaction(transaction);
