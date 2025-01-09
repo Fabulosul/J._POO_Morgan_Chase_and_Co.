@@ -40,7 +40,7 @@ public final class DeleteCard extends Command implements CommandInterface {
             return;
         }
 
-        bankAccount.removeCard(card);
+        bankAccount.removeCard(card, user);
         registerTransaction(user, bankAccount.getIban());
     }
 

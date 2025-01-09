@@ -52,7 +52,7 @@ public final class SpendingsReport extends Command implements CommandInterface {
             return;
         }
 
-        if (bankAccount.isSavingsAccount()) {
+        if (bankAccount.getAccountType().equals("savings")) {
             addErrorToOutput("This kind of report is not supported for a saving account");
             return;
         }

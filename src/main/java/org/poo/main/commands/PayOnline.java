@@ -71,12 +71,12 @@ public final class PayOnline extends Command implements CommandInterface {
         if (hasSufficientFunds) {
             registerTransaction(user, bankAccount, card, "Card payment");
             if (card.isOneTimeCard()) {
-                bankAccount.removeCard(card);
+                bankAccount.removeCard(card, user);
                 registerTransaction(user, bankAccount, card,
                         "The card has been destroyed");
 
                 Card newCard = new Card("oneTime");
-                bankAccount.addCard(newCard);
+                bankAccount.addCard(newCard, user);
                 registerTransaction(user, bankAccount, newCard, "New card created");
             }
             Commerciant commerciant = bank.getCommerciantByName(getCommerciant());

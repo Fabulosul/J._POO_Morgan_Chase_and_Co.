@@ -44,7 +44,7 @@ public final class ChangeInterestRate extends Command implements CommandInterfac
         if (bankAccount == null) {
             return;
         }
-        if (bankAccount.isSavingsAccount()) {
+        if (bankAccount.getAccountType().equals("savings")) {
             ((SavingsBankAccount) bankAccount).changeInterestRate(getInterestRate());
             registerTransaction(user);
         } else {

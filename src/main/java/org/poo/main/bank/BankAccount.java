@@ -22,7 +22,6 @@ public class BankAccount {
     private double balance;
     private String currency;
     // Field that is used to differentiate between classic and savings accounts
-    private String accountType;
     private List<Card> cards;
     // Map that makes it easier to find a card by its number
     private Map<String, Card> cardNrToCardMap;
@@ -32,13 +31,17 @@ public class BankAccount {
     private List<CashbackObserver> cashbackObservers;
     private List<Voucher> cashbackVouchers;
     private int nrOfTransactions;
+    enum AccountType {
+        CLASSIC, SAVINGS, BUSINESS
+    }
+    private AccountType accountType;
 
 
     public BankAccount(final String currency) {
         this.iban = Utils.generateIBAN();
         this.balance = 0;
         this.currency = currency;
-        this.accountType = "classic";
+        this.accountType = AccountType.CLASSIC;
         this.cards = new ArrayList<>();
         this.cardNrToCardMap = new HashMap<>();
         this.minBalance = 0;
@@ -47,16 +50,15 @@ public class BankAccount {
         this.cashbackObservers = new ArrayList<>();
         this.cashbackVouchers = new ArrayList<>();
         this.nrOfTransactions = 0;
+
     }
 
-    /**
-     * Method overridden by the SavingsAccount class to check
-     * if the current account is a savings account.
-     *
-     * @return true if the account is a savings account, false otherwise
-     */
-    public boolean isSavingsAccount() {
-        return false;
+    public final String getAccountType() {
+        return switch (accountType) {
+            case CLASSIC -> "classic";
+            case SAVINGS -> "savings";
+            case BUSINESS -> "business";
+        };
     }
 
     /**
@@ -64,7 +66,7 @@ public class BankAccount {
      *
      * @param card -> the card to be added to the account
      */
-    public final void addCard(final Card card) {
+    public void addCard(final Card card, final User user) {
         cards.add(card);
         cardNrToCardMap.put(card.getCardNumber(), card);
     }
@@ -74,7 +76,7 @@ public class BankAccount {
      *
      * @param card -> the card to be removed from the account
      */
-    public final void removeCard(final Card card) {
+    public void removeCard(final Card card, final User user) {
         cards.remove(card);
         cardNrToCardMap.remove(card.getCardNumber());
     }

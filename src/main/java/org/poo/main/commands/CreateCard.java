@@ -42,7 +42,7 @@ public final class CreateCard extends Command implements CommandInterface {
         }
 
         Card card = new Card(cardType);
-        bankAccount.addCard(card);
+        bankAccount.addCard(card, user);
         registerTransaction(user, bankAccount, card.getCardNumber());
     }
 

@@ -47,6 +47,10 @@ public final class CommandFactory {
             case "cashWithdrawal" -> new CashWithdrawal(bank, command, output);
             case "acceptSplitPayment" -> new AcceptSplitPayment(bank, command, output);
             case "rejectSplitPayment" -> new RejectSplitPayment(bank, command, output);
+            case "addNewBusinessAssociate" -> new AddNewBusinessAssociate(bank, command);
+            case "changeSpendingLimit" -> new ChangeSpendingLimit(bank, command);
+            case "changeDepositLimit" -> new ChangeDepositLimit(bank, command);
+            case "businessReport" -> new BusinessReport(bank, command, output);
             default -> null;
         };
     }

@@ -11,18 +11,7 @@ public final class SavingsBankAccount extends BankAccount {
     public SavingsBankAccount(final String currency, final double interestRate) {
         super(currency);
         this.interestRate = interestRate;
-        this.setAccountType("savings");
-    }
-
-    /**
-     * Method overridden from BankAccount class to check if the account
-     * is a savings one.
-     *
-     * @return true if the account is a savings one, false otherwise
-     */
-    @Override
-    public boolean isSavingsAccount() {
-        return true;
+        setAccountType(AccountType.SAVINGS);
     }
 
     /**

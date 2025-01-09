@@ -37,7 +37,7 @@ public class WithdrawSavings extends Command implements CommandInterface {
             registerTransactionError(user, "Account not found");
             return;
         }
-        if (!bankAccount.isSavingsAccount()) {
+        if (!bankAccount.getAccountType().equals("savings")) {
             registerTransactionError(user, "Account is not of type savings.");
             return;
         }

@@ -38,7 +38,7 @@ public final class AddInterest extends Command implements CommandInterface {
         if (bankAccount == null) {
             return;
         }
-        if (bankAccount.isSavingsAccount()) {
+        if (bankAccount.getAccountType().equals("savings")) {
             double interestIncome = ((SavingsBankAccount) bankAccount).addInterest();
             String currency = bankAccount.getCurrency();
             registerSuccessfullTransaction(user, interestIncome, currency);
