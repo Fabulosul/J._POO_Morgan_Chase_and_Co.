@@ -6,10 +6,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
-import org.poo.main.bank.Bank;
-import org.poo.main.bank.BankAccount;
-import org.poo.main.bank.Transaction;
-import org.poo.main.bank.User;
+import org.poo.fileio.CommerciantInput;
+import org.poo.main.bank.*;
+import org.poo.main.cashback.Commerciant;
+import org.poo.main.cashback.PaymentDetails;
 
 @Getter
 @Setter
@@ -74,6 +74,27 @@ public final class SendMoney extends Command implements CommandInterface {
         }
         registerSenderTransaction(sender, senderAccount, receiverAccount);
         registerReceiverTransaction(receiver, receiverAccount, senderAccount);
+        String commerciantName = null;
+        if (receiverAccount.getAccountType().equals("business")) {
+            for(CommerciantInput commerciant : bank.getCommerciants()) {
+                if(commerciant.getAccount().equals(receiverAccount.getIban())) {
+                    commerciantName = commerciant.getCommerciant();
+                }
+            }
+            Transaction.TransactionBuilder transactionBuilder = new Transaction
+                    .TransactionBuilder(getTimestamp(), "spend")
+                    .amount(getAmount())
+                    .username(sender.getLastName() + " " + sender.getFirstName());
+
+            if(commerciantName != null) {
+                Commerciant commerciant = bank.getCommerciantByName(commerciantName);
+                PaymentDetails paymentDetails = new PaymentDetails(getAmount(), getCurrency(), commerciant);
+                senderAccount.notifyCashbackObservers(paymentDetails);
+                transactionBuilder.commerciant(commerciantName);
+            }
+            Transaction businessTransaction = transactionBuilder.build();
+            ((BusinessAccount) receiverAccount).addBusinessTransaction(businessTransaction);
+        }
     }
 
     /**

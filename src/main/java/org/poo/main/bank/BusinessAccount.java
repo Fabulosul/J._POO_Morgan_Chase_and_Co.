@@ -26,10 +26,9 @@ public class BusinessAccount extends BankAccount {
     }
     private double spendingLimit;
     private double depositLimit;
-    private double totalSpent;
-    private double totalDeposited;
     private Map<String, BusinessUser> businessUsers;
     List<Commerciant> commerciants;
+    List<Transaction> businessTransactions;
 
     public BusinessAccount(String currency, User user, Bank bank) {
         super(currency);
@@ -42,10 +41,9 @@ public class BusinessAccount extends BankAccount {
                 bank.convertCurrency(500, "RON", currency);
         this.depositLimit =
                 bank.convertCurrency(500, "RON", currency);
-        this.totalSpent = 0;
-        this.totalDeposited = 0;
         this.businessUsers = new HashMap<>();
         businessUsers.put(name, owner);
+        this.businessTransactions = new ArrayList<>();
     }
 
     public UserRole getUserRole(User user) {
@@ -94,4 +92,9 @@ public class BusinessAccount extends BankAccount {
         BusinessUser businessUser = getBusinessUserByName(username);
         businessUser.removeCard(card);
     }
+
+    public void addBusinessTransaction(final Transaction transaction) {
+        businessTransactions.add(transaction);
+    }
+
 }

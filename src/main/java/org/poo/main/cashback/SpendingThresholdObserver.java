@@ -30,7 +30,7 @@ public class SpendingThresholdObserver implements CashbackObserver {
             bankAccount.setNrOfTransactions(bankAccount.getNrOfTransactions() + 1);
             commerciant.setAmountSpent(commerciant.getAmountSpent() + convertedAmount);
             User user = bank.getUserByAccount(bankAccount.getIban());
-            double cashbackPercentage = user.getServicePlan().getCashbackPercentage(convertedAmount);
+            double cashbackPercentage = user.getServicePlan().getCashbackPercentage(commerciant.getAmountSpent());
             double cashback = convertedAmount * cashbackPercentage;
             bankAccount.addMoney(bank.convertCurrency(cashback, "RON", bankAccount.getCurrency()));
         }

@@ -6,11 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
-import org.poo.main.bank.Bank;
-import org.poo.main.bank.BankAccount;
-import org.poo.main.bank.Card;
-import org.poo.main.bank.User;
-import org.poo.main.bank.Transaction;
+import org.poo.main.bank.*;
 import org.poo.main.cashback.Commerciant;
 import org.poo.main.cashback.PaymentDetails;
 
@@ -118,6 +114,15 @@ public final class PayOnline extends Command implements CommandInterface {
                         .build();
                 user.addTransaction(transaction);
                 bankAccount.addTransaction(transaction);
+                if(bankAccount.getAccountType().equals("business")) {
+                    Transaction businessTransaction = new Transaction
+                            .TransactionBuilder(getTimestamp(), "spend")
+                            .amount(convertedAmount)
+                            .username(user.getLastName() + " " + user.getFirstName())
+                            .commerciant(getCommerciant())
+                            .build();
+                    ((BusinessAccount) bankAccount).addBusinessTransaction(businessTransaction);
+                }
                 break;
             case "The card has been destroyed":
                 transaction = new Transaction

@@ -13,6 +13,7 @@ import java.util.List;
 // This annotation is used to exclude null or empty fields from the JSON output.
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public final class Transaction {
+    private String username;
     private int timestamp;
     private String account;
     @JsonProperty("accountIBAN")
@@ -86,7 +87,13 @@ public final class Transaction {
         return null;
     }
 
+    @JsonIgnore
+    public double getRawAmount() {
+        return amount;
+    }
+
     private Transaction(final TransactionBuilder builder) {
+        this.username = builder.username;
         this.timestamp = builder.timestamp;
         this.account = builder.account;
         this.accountIban = builder.accountIban;
@@ -111,6 +118,7 @@ public final class Transaction {
     @Getter
     @Setter
     public static final class TransactionBuilder {
+        private String username;
         private int timestamp;
         private String account;
         private String accountIban;
@@ -134,6 +142,11 @@ public final class Transaction {
         public TransactionBuilder(final int timestamp, final String description) {
             this.timestamp = timestamp;
             this.description = description;
+        }
+
+        public TransactionBuilder username(final String username) {
+            this.username = username;
+            return this;
         }
 
         /**

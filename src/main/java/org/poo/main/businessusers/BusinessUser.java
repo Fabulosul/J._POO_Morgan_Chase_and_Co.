@@ -12,14 +12,10 @@ import org.poo.main.bank.User;
 public abstract class BusinessUser {
     private String username;
     private String email;
-    private double amountSpent;
-    private double amountDeposited;
     private final BusinessAccount businessAccount;
 
     public BusinessUser(String username, BusinessAccount businessAccount) {
         this.username = username;
-        this.amountSpent = 0;
-        this.amountDeposited = 0;
         this.businessAccount = businessAccount;
     }
 

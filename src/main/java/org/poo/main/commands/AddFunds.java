@@ -3,9 +3,7 @@ package org.poo.main.commands;
 import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
-import org.poo.main.bank.Bank;
-import org.poo.main.bank.BankAccount;
-import org.poo.main.bank.User;
+import org.poo.main.bank.*;
 
 @Getter
 @Setter
@@ -25,14 +23,27 @@ public final class AddFunds extends Command implements CommandInterface {
      */
     @Override
     public void execute() {
-        User user = bank.getUserByAccount(getAccount());
+        User user = bank.getUserByMail(getEmail());
         if (user == null) {
             return;
         }
-        BankAccount bankAccount = user.getAccountByIban(getAccount());
+        BankAccount bankAccount = bank.findAccountByIban(getAccount());
         if (bankAccount == null) {
             return;
         }
+        if (bankAccount.getAccountType().equals("business")) {
+            BusinessAccount.UserRole userRole = ((BusinessAccount) bankAccount).getUserRole(user);
+            if (userRole == null || userRole.equals(BusinessAccount.UserRole.EMPLOYEE)) {
+                return;
+            }
+            Transaction transaction = new Transaction
+                    .TransactionBuilder(getTimestamp(), "deposit")
+                    .amount(getAmount())
+                    .username(user.getLastName() + " " + user.getFirstName())
+                    .build();
+            ((BusinessAccount) bankAccount).addBusinessTransaction(transaction);
+        }
         bankAccount.addMoney(getAmount());
+
     }
 }
