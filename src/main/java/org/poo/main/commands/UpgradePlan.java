@@ -1,6 +1,8 @@
 package org.poo.main.commands;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
@@ -45,6 +47,18 @@ public class UpgradePlan extends Command implements CommandInterface {
     public void execute() {
         User user = bank.getUserByAccount(getAccount());
         if (user == null) {
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode objectNode = mapper.createObjectNode();
+            objectNode.put("command", "upgradePlan");
+
+            ObjectNode outputNode = mapper.createObjectNode();
+            outputNode.put("description", "Account not found");
+            outputNode.put("timestamp", getTimestamp());
+
+            objectNode.set("output", outputNode);
+            objectNode.put("timestamp", getTimestamp());
+
+            output.add(objectNode);
             return;
         }
         BankAccount bankAccount = user.getAccountByIban(getAccount());

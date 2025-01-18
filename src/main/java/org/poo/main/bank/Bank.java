@@ -7,10 +7,7 @@ import org.poo.fileio.ExchangeInput;
 import org.poo.main.cashback.Commerciant;
 import org.poo.main.splitpayment.SplitPaymentDetails;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Getter
 @Setter
@@ -286,10 +283,13 @@ public final class Bank {
         paymentType = splitPaymentType.equals("custom")
                 ? SplitPaymentDetails.SplitPaymentType.CUSTOM
                 : SplitPaymentDetails.SplitPaymentType.EQUAL;
-        for (SplitPaymentDetails splitPayment : splitPayments) {
+        Iterator<SplitPaymentDetails> iterator = splitPayments.iterator();
+        while (iterator.hasNext()) {
+            SplitPaymentDetails splitPayment = iterator.next();
             if (splitPayment.getPaymentType() == paymentType) {
-                splitPayment.acceptPayment(user);
-                return;
+                if (splitPayment.acceptPayment(user)) {
+                    iterator.remove();
+                }
             }
         }
     }

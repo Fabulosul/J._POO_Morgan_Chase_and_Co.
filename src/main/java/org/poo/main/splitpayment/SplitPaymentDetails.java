@@ -43,7 +43,7 @@ public class SplitPaymentDetails {
         participants.removeIf(participant -> participant.getUser().equals(user));
     }
 
-    public void acceptPayment(User user) {
+    public boolean acceptPayment(User user) {
         for (Participant participant : participants) {
             if (participant.getUser().equals(user)) {
                 participant.setPaymentStatus(Participant.PaymentStatus.ACCEPTED);
@@ -51,7 +51,9 @@ public class SplitPaymentDetails {
         }
         if(isPaymentComplete()) {
             makeSplitPayment();
+            return true;
         }
+        return false;
     }
 
     public void rejectPayment(User user) {
@@ -61,6 +63,7 @@ public class SplitPaymentDetails {
                 break;
             }
         }
+        rejectSplitPayment();
     }
 
     public boolean isPaymentComplete() {
@@ -75,7 +78,7 @@ public class SplitPaymentDetails {
     public void makeSplitPayment() {
         BankAccount invalidAccount = findInvalidAccount();
         if (invalidAccount != null) {
-            addTransactionError(invalidAccount.getIban());
+            addTransactionError(invalidAccount.getIban(), "insufficientFunds");
         } else {
             for (Participant participant : participants) {
                 BankAccount bankAccount = participant.getBankAccount();
@@ -83,6 +86,10 @@ public class SplitPaymentDetails {
             }
             addSuccessfulTransaction();
         }
+    }
+
+    public void rejectSplitPayment() {
+        addTransactionError(null, "rejectSplitPayment");
     }
 
     private BankAccount findInvalidAccount() {
@@ -97,7 +104,7 @@ public class SplitPaymentDetails {
 
     private void addSuccessfulTransaction() {
         for (Participant participant : participants) {
-            Transaction transaction = createTransaction(null);
+            Transaction transaction = createTransaction(null, "success");
             User user = participant.getUser();
             if (user == null) {
                 return;
@@ -106,18 +113,22 @@ public class SplitPaymentDetails {
         }
     }
 
-    private void addTransactionError(String invalidAccount) {
+    private void addTransactionError(String invalidAccount, String message) {
+        List<User> users = new ArrayList<>();
         for (Participant participant : participants) {
-            Transaction transaction = createTransaction(invalidAccount);
+            Transaction transaction = createTransaction(invalidAccount, message);
             User user = participant.getUser();
             if (user == null) {
                 return;
             }
-            user.addTransaction(transaction);
+            if(!users.contains(user)) {
+                users.add(user);
+                user.addTransaction(transaction);
+            }
         }
     }
 
-    private Transaction createTransaction(String invalidAccount) {
+    private Transaction createTransaction(String invalidAccount, String message) {
         List<String> accounts = new ArrayList<>();
         List<Double> amountPerUser = new ArrayList<>();
         for (Participant participant : participants) {
@@ -146,8 +157,13 @@ public class SplitPaymentDetails {
             builder.error("Account " + invalidAccount +
                     " has insufficient funds for a split payment.");
         }
+        if (message.equals("rejectSplitPayment")) {
+            builder.error("One user rejected the payment.");
+        }
 
         return builder.build();
     }
+
+
 
 }
