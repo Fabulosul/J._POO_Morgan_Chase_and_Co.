@@ -31,6 +31,7 @@ public final class User {
     private Map<String, BankAccount> aliasToAccountMap;
     // An array of transactions that the user has made
     private ArrayNode transactionsReport;
+    private int upgradeCounter;
 
 
     public User(final UserInput user) {
@@ -48,7 +49,7 @@ public final class User {
         this.aliasToAccountMap = new HashMap<>();
         ObjectMapper mapper = new ObjectMapper();
         this.transactionsReport = mapper.createArrayNode();
-
+        this.upgradeCounter = 0;
     }
 
     /**

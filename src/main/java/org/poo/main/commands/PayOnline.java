@@ -7,8 +7,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
 import org.poo.main.bank.*;
+import org.poo.main.businessusers.Owner;
 import org.poo.main.cashback.Commerciant;
 import org.poo.main.cashback.PaymentDetails;
+import org.poo.main.serviceplans.UserPlan;
 
 
 @Getter
@@ -97,6 +99,22 @@ public final class PayOnline extends Command implements CommandInterface {
                     PaymentDetails paymentDetails = new PaymentDetails(getAmount(), getCurrency(), commerciant, user);
                     bankAccount.notifyCashbackObservers(paymentDetails);
                     break;
+                }
+            }
+            double amountInRon = bank.convertCurrency(getAmount(), getCurrency(),
+                    "RON");
+            if(user.getServicePlan().getPlanName().equals("silver")
+                    && amountInRon >= 300) {
+                user.setUpgradeCounter(user.getUpgradeCounter() + 1);
+                if(user.getUpgradeCounter() == 5) {
+                    user.changeServicePlan("gold");
+                    Transaction transaction = new Transaction
+                            .TransactionBuilder(getTimestamp(), "Upgrade plan")
+                            .accountIban(bankAccount.getIban())
+                            .newPlanType("gold")
+                            .build();
+                    user.addTransaction(transaction);
+                    bankAccount.addTransaction(transaction);
                 }
             }
         } else {

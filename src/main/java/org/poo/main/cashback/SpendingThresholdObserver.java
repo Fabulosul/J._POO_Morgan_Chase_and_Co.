@@ -31,7 +31,9 @@ public class SpendingThresholdObserver implements CashbackObserver {
         while (iterator.hasNext()) {
             Voucher voucher = iterator.next();
             if (voucher.getCategory() == commerciant.getCategory()) {
-                bankAccount.addMoney(paymentDetails.getAmount() * voucher.getPercentage());
+                double convertedAmount = bank.convertCurrency(paymentDetails.getAmount(),
+                        paymentDetails.getCurrency(), bankAccount.getCurrency());
+                bankAccount.addMoney(convertedAmount * voucher.getPercentage());
                 iterator.remove();
             }
         }

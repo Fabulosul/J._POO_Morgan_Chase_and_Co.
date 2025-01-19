@@ -83,6 +83,12 @@ public final class SendMoney extends Command implements CommandInterface {
             Transaction businessTransaction = transactionBuilder.build();
             ((BusinessAccount) receiverAccount).addBusinessTransaction(businessTransaction);
         }
+        if(sender.getServicePlan().getPlanName().equals("silver")) {
+            sender.setUpgradeCounter(sender.getUpgradeCounter() + 1);
+            if(sender.getUpgradeCounter() == 5) {
+                sender.changeServicePlan("gold");
+            }
+        }
     }
 
     public void handleCommerciantCase(User sender, BankAccount senderAccount, String commerciantIban) {
@@ -112,6 +118,22 @@ public final class SendMoney extends Command implements CommandInterface {
                         .build();
                 senderAccount.addTransaction(senderTransaction);
                 sender.addTransaction(senderTransaction);
+                double amountInRon = bank.convertCurrency(getAmount(), senderAccount.getCurrency(),
+                        "RON");
+                if(sender.getServicePlan().getPlanName().equals("silver")
+                        && amountInRon >= 300) {
+                    sender.setUpgradeCounter(sender.getUpgradeCounter() + 1);
+                    if(sender.getUpgradeCounter() == 5) {
+                        sender.changeServicePlan("gold");
+                        Transaction transaction = new Transaction
+                                .TransactionBuilder(getTimestamp(), "Upgrade plan")
+                                .accountIban(senderAccount.getIban())
+                                .newPlanType("gold")
+                                .build();
+                        sender.addTransaction(transaction);
+                        senderAccount.addTransaction(transaction);
+                    }
+                }
                 return;
             }
        }
