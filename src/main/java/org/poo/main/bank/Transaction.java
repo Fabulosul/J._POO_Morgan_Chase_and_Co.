@@ -24,6 +24,10 @@ public final class Transaction {
     private String description;
     private String newPlanType;
     private String splitPaymentType;
+    @JsonProperty("classicAccountIBAN")
+    private String classicAccountIban;
+    @JsonProperty("savingsAccountIBAN")
+    private String savingsAccountIban;
     @JsonIgnore
     private boolean currencyWithoutAmount;
     // This annotation is used to give a custom name to the field in the JSON output.
@@ -104,6 +108,8 @@ public final class Transaction {
         this.newPlanType = builder.newPlanType;
         this.currencyWithoutAmount = builder.currencyWithoutAmount;
         this.splitPaymentType = builder.splitPaymentType;
+        this.classicAccountIban = builder.classicAccountIban;
+        this.savingsAccountIban = builder.savingsAccountIban;
         this.senderIban = builder.senderIban;
         this.receiverIban = builder.receiverIban;
         this.currency = builder.currency;
@@ -129,6 +135,8 @@ public final class Transaction {
         private String newPlanType;
         private boolean currencyWithoutAmount;
         private String splitPaymentType;
+        private String classicAccountIban;
+        private String savingsAccountIban;
         private String senderIban;
         private String receiverIban;
         private String currency;
@@ -317,6 +325,16 @@ public final class Transaction {
 
         public TransactionBuilder currencyWithoutAmount(final boolean currencyWithoutAmount) {
             this.currencyWithoutAmount = currencyWithoutAmount;
+            return this;
+        }
+
+        public TransactionBuilder classicAccountIban(final String classicAccountIban) {
+            this.classicAccountIban = classicAccountIban;
+            return this;
+        }
+
+        public TransactionBuilder savingsAccountIban(final String savingsAccountIban) {
+            this.savingsAccountIban = savingsAccountIban;
             return this;
         }
 

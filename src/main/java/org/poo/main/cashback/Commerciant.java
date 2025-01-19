@@ -2,6 +2,10 @@ package org.poo.main.cashback;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.poo.main.bank.User;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -16,6 +20,8 @@ public class Commerciant {
     private final Category category;
     private final CashbackStrategy type;
     private double amountSpent;
+    private int nrOfTransactions;
+    private List<User> users;
 
     public Commerciant(String name, String category, String type) {
         this.name = name;
@@ -31,7 +37,14 @@ public class Commerciant {
             default -> CashbackStrategy.NONE;
         };
         this.amountSpent = 0;
+        this.nrOfTransactions = 0;
+        this.users = new ArrayList<>();
     }
+
+    public void addUser(User user) {
+        users.add(user);
+    }
+
 
 
 }

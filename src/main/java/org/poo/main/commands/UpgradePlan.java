@@ -63,16 +63,16 @@ public class UpgradePlan extends Command implements CommandInterface {
         }
         BankAccount bankAccount = user.getAccountByIban(getAccount());
         if (bankAccount == null) {
-            registerTransactionError(user, "Account not found");
+            registerTransactionError(null, user, "Account not found");
             return;
         }
         if(user.getServicePlan().getPlanName().equals(getNewPlanType())) {
-            registerTransactionError(user, "The user already has the " +
+            registerTransactionError(bankAccount, user, "The user already has the " +
                     user.getServicePlan().getPlanName() + " plan.");
             return;
         }
         if(!user.getServicePlan().canUpgradePlan(getNewPlanType())) {
-            registerTransactionError(user, "You cannot downgrade your plan.");
+            registerTransactionError(bankAccount, user, "You cannot downgrade your plan.");
             return;
         }
 
@@ -87,8 +87,9 @@ public class UpgradePlan extends Command implements CommandInterface {
                     .newPlanType(getNewPlanType())
                     .build();
             user.addTransaction(transaction);
+            bankAccount.addTransaction(transaction);
         } else {
-            registerTransactionError(user, "Insufficient funds");
+            registerTransactionError(bankAccount, user, "Insufficient funds");
         }
 
     }
@@ -97,11 +98,14 @@ public class UpgradePlan extends Command implements CommandInterface {
         return upgradePlanFees.get(oldPlanName).get(newPlanName);
     }
 
-    public void registerTransactionError(User user, String message) {
+    public void registerTransactionError(BankAccount bankAccount, User user, String message) {
         Transaction transaction = new Transaction
                 .TransactionBuilder(getTimestamp(), message)
                 .build();
         user.addTransaction(transaction);
+        if (bankAccount != null) {
+            bankAccount.addTransaction(transaction);
+        }
     }
 
 }

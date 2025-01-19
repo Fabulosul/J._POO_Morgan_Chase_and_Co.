@@ -41,7 +41,7 @@ public final class AddInterest extends Command implements CommandInterface {
         if (bankAccount.getAccountType().equals("savings")) {
             double interestIncome = ((SavingsBankAccount) bankAccount).addInterest();
             String currency = bankAccount.getCurrency();
-            registerSuccessfullTransaction(user, interestIncome, currency);
+            registerSuccessfullTransaction(bankAccount, user, interestIncome, currency);
         } else {
             addErrorToOutput();
         }
@@ -67,7 +67,7 @@ public final class AddInterest extends Command implements CommandInterface {
         output.add(errorNode);
     }
 
-    private void registerSuccessfullTransaction(User user, double amount, String currency) {
+    private void registerSuccessfullTransaction(BankAccount bankAccount, User user, double amount, String currency) {
         Transaction transaction = new Transaction
                 .TransactionBuilder(getTimestamp(), "Interest rate income")
                 .amount(amount)
@@ -75,5 +75,8 @@ public final class AddInterest extends Command implements CommandInterface {
                 .separateAmountAndCurrency(true)
                 .build();
         user.addTransaction(transaction);
+        if (bankAccount != null) {
+            bankAccount.addTransaction(transaction);
+        }
     }
 }

@@ -24,6 +24,9 @@ public class CashWithdrawal extends Command implements CommandInterface {
 
     @Override
     public void execute() {
+        if(getEmail() == null) {
+            return;
+        }
         User user = bank.getUserByMail(getEmail());
         if (user == null) {
             addErrorToOutput("User not found");
@@ -43,6 +46,11 @@ public class CashWithdrawal extends Command implements CommandInterface {
         double amountWithCommission = bankAccount.calculateAmountWithCommission(bank, getAmount());
         if(bankAccount.hasSufficientFunds(amountWithCommission, withdrawalCurrency, bank)) {
             bankAccount.payOnline(bank, getAmount(), withdrawalCurrency);
+            if (card.isOneTimeCard() && bankAccount.getBalance() == 0) {
+                bankAccount.removeCard(card, user);
+                Card newCard = new Card("oneTime");
+                bankAccount.addCard(newCard, user);
+            }
             Transaction transaction = new Transaction
                     .TransactionBuilder(getTimestamp(),
                     "Cash withdrawal of " + getAmount())

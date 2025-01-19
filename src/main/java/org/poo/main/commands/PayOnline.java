@@ -56,6 +56,23 @@ public final class PayOnline extends Command implements CommandInterface {
             return;
         }
 
+        if(bankAccount.getAccountType().equals("business")
+                && !((BusinessAccount) bankAccount).isBusinessUser(user)) {
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode objectNode = mapper.createObjectNode();
+
+            objectNode.put("command", "payOnline");
+            ObjectNode outputNode = mapper.createObjectNode();
+            outputNode.put("description", "Card not found");
+            outputNode.put("timestamp", getTimestamp());
+
+            objectNode.set("output", outputNode);
+            objectNode.put("timestamp", getTimestamp());
+
+            output.add(objectNode);
+            return;
+        }
+
         if (card.isFrozen()) {
             registerTransaction(user, bankAccount, card, "The card is frozen");
             return;
@@ -75,9 +92,13 @@ public final class PayOnline extends Command implements CommandInterface {
                 bankAccount.addCard(newCard, user);
                 registerTransaction(user, bankAccount, newCard, "New card created");
             }
-            Commerciant commerciant = bank.getCommerciantByName(getCommerciant());
-            PaymentDetails paymentDetails = new PaymentDetails(getAmount(), getCurrency(), commerciant);
-            bankAccount.notifyCashbackObservers(paymentDetails);
+            for (Commerciant commerciant : bankAccount.getCommerciants()) {
+                if (commerciant.getName().equals(getCommerciant())) {
+                    PaymentDetails paymentDetails = new PaymentDetails(getAmount(), getCurrency(), commerciant, user);
+                    bankAccount.notifyCashbackObservers(paymentDetails);
+                    break;
+                }
+            }
         } else {
             registerTransaction(user, bankAccount, card, "Insufficient funds");
         }

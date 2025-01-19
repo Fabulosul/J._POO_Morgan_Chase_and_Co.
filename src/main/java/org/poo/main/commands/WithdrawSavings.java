@@ -29,39 +29,46 @@ public class WithdrawSavings extends Command implements CommandInterface {
             return;
         }
         if (user.getAge() < 21) {
-            registerTransactionError(user, "You don't have the minimum age required.");
+            registerTransactionError(null, user, "You don't have the minimum age required.");
             return;
         }
         BankAccount bankAccount = user.getAccountByIban(getAccount());
         if (bankAccount == null) {
-            registerTransactionError(user, "Account not found");
+            registerTransactionError(null, user, "Account not found");
             return;
         }
         if (!bankAccount.getAccountType().equals("savings")) {
-            registerTransactionError(user, "Account is not of type savings.");
+            registerTransactionError(bankAccount, user, "Account is not of type savings.");
             return;
         }
         BankAccount classicAccount = user.findClassicAccountByCurrency(getCurrency());
         if (classicAccount == null) {
-            registerTransactionError(user, "You do not have a classic account.");
+            registerTransactionError(bankAccount, user, "You do not have a classic account.");
             return;
         }
-        if (bankAccount.hasSufficientFunds(getAmount(), getCurrency(), bank)) {
-            registerTransactionError(user, "Insufficient funds");
+        if (!bankAccount.hasSufficientFunds(getAmount(), getCurrency(), bank)) {
+            registerTransactionError(bankAccount, user, "Insufficient funds");
             return;
         }
 
-        bankAccount.sendMoney(bank, classicAccount, getAmount());
+        bankAccount.sendMoneyWithoutCommission(bank, classicAccount, getAmount());
         Transaction transaction = new Transaction
                 .TransactionBuilder(getTimestamp(), "Savings withdrawal")
+                .amount(getAmount())
+                .classicAccountIban(classicAccount.getIban())
+                .savingsAccountIban(bankAccount.getIban())
                 .build();
+        user.addTransaction(transaction);
         user.addTransaction(transaction);
     }
 
-    public void registerTransactionError(User user, String message) {
+    public void registerTransactionError(BankAccount bankAccount, User user, String message) {
         Transaction transaction = new Transaction
                 .TransactionBuilder(getTimestamp(), message)
                 .build();
         user.addTransaction(transaction);
+        if (bankAccount != null) {
+            bankAccount.addTransaction(transaction);
+        }
     }
 }

@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.Setter;
+import org.poo.fileio.CommerciantInput;
 import org.poo.main.cashback.CashbackObserver;
+import org.poo.main.cashback.Commerciant;
 import org.poo.main.cashback.PaymentDetails;
 import org.poo.main.cashback.Voucher;
 import org.poo.utils.Utils;
@@ -35,9 +37,11 @@ public class BankAccount {
         CLASSIC, SAVINGS, BUSINESS
     }
     private AccountType accountType;
+    List<Commerciant> commerciants;
+    private double spendingThresholdAmount;
 
 
-    public BankAccount(final String currency) {
+    public BankAccount(final Bank bank, final String currency) {
         this.iban = Utils.generateIBAN();
         this.balance = 0;
         this.currency = currency;
@@ -50,7 +54,12 @@ public class BankAccount {
         this.cashbackObservers = new ArrayList<>();
         this.cashbackVouchers = new ArrayList<>();
         this.nrOfTransactions = 0;
-
+        this.commerciants = new ArrayList<>();
+        for (CommerciantInput commerciant : bank.getCommerciants()) {
+            this.commerciants.add(new Commerciant(commerciant.getCommerciant(),
+                    commerciant.getType(), commerciant.getCashbackStrategy()));
+        }
+        this.spendingThresholdAmount = 0;
     }
 
     public final String getAccountType() {
@@ -139,6 +148,13 @@ public class BankAccount {
         double convertedAmountWithCommission = bank.convertCurrency(amountWithCommission,
                 "RON", getCurrency());
         return deductMoney(convertedAmountWithCommission);
+
+    }
+
+    public final boolean payWithoutCommission(final Bank bank, final double amount,
+                                                    final String paymentCurrency) {
+        double convertedAmount = bank.convertCurrency(amount, paymentCurrency, getCurrency());
+        return deductMoney(convertedAmount);
     }
 
     /**
@@ -180,6 +196,27 @@ public class BankAccount {
                     receiverAccount.getCurrency());
             receiverAccount.addMoney(convertedAmount);
         }
+        return true;
+    }
+
+    public final boolean sendMoneyWithoutCommission(final Bank bank, final BankAccount receiverAccount,
+                                                    final double amount) {
+        double amountInRon = bank.convertCurrency(amount, currency, "RON");
+        double convertedAmount = bank.convertCurrency(amountInRon, "RON", currency);
+        if (convertedAmount > balance) {
+            return false;
+        }
+
+        deductMoney(convertedAmount);
+
+
+        if (receiverAccount.getCurrency().equals(currency)) {
+            receiverAccount.addMoney(amount);
+        } else {
+            double receiverConvertedAmount = bank.convertCurrency(amount, currency, receiverAccount.getCurrency());
+            receiverAccount.addMoney(receiverConvertedAmount);
+        }
+
         return true;
     }
 

@@ -59,6 +59,7 @@ public final class SendMoney extends Command implements CommandInterface {
             receiverAccount = bank.findAccountByIban(getReceiver());
         }
         if (receiverAccount == null) {
+            handleCommerciantCase(sender, senderAccount, getReceiver());
             return;
         }
         receiver = bank.getUserByAccount(getReceiver());
@@ -74,27 +75,46 @@ public final class SendMoney extends Command implements CommandInterface {
         }
         registerSenderTransaction(sender, senderAccount, receiverAccount);
         registerReceiverTransaction(receiver, receiverAccount, senderAccount);
-        String commerciantName = null;
         if (receiverAccount.getAccountType().equals("business")) {
-            for(CommerciantInput commerciant : bank.getCommerciants()) {
-                if(commerciant.getAccount().equals(receiverAccount.getIban())) {
-                    commerciantName = commerciant.getCommerciant();
-                }
-            }
             Transaction.TransactionBuilder transactionBuilder = new Transaction
                     .TransactionBuilder(getTimestamp(), "spend")
                     .amount(getAmount())
                     .username(sender.getLastName() + " " + sender.getFirstName());
-
-            if(commerciantName != null) {
-                Commerciant commerciant = bank.getCommerciantByName(commerciantName);
-                PaymentDetails paymentDetails = new PaymentDetails(getAmount(), getCurrency(), commerciant);
-                senderAccount.notifyCashbackObservers(paymentDetails);
-                transactionBuilder.commerciant(commerciantName);
-            }
             Transaction businessTransaction = transactionBuilder.build();
             ((BusinessAccount) receiverAccount).addBusinessTransaction(businessTransaction);
         }
+    }
+
+    public void handleCommerciantCase(User sender, BankAccount senderAccount, String commerciantIban) {
+        String commmerciantName = null;
+        for (CommerciantInput commerciant : bank.getCommerciants()) {
+            if (commerciant.getAccount().equals(commerciantIban)) {
+                commmerciantName = commerciant.getCommerciant();
+                break;
+            }
+        }
+        if (commmerciantName == null) {
+            return;
+        }
+       for (Commerciant commerciant : senderAccount.getCommerciants()) {
+            if (commerciant.getName().equals(commmerciantName)) {
+                senderAccount.payOnline(bank, getAmount(), senderAccount.getCurrency());
+                PaymentDetails paymentDetails = new PaymentDetails(getAmount(), senderAccount.getCurrency(),
+                        commerciant, sender);
+                senderAccount.notifyCashbackObservers(paymentDetails);
+                Transaction senderTransaction = new Transaction
+                        .TransactionBuilder(getTimestamp(), getDescription())
+                        .senderIban(getAccount())
+                        .receiverIban(commerciantIban)
+                        .amount(getAmount())
+                        .currency(senderAccount.getCurrency())
+                        .transferType("sent")
+                        .build();
+                senderAccount.addTransaction(senderTransaction);
+                sender.addTransaction(senderTransaction);
+                return;
+            }
+       }
     }
 
     /**

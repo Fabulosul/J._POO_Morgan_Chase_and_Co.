@@ -27,11 +27,10 @@ public class BusinessAccount extends BankAccount {
     private double spendingLimit;
     private double depositLimit;
     private Map<String, BusinessUser> businessUsers;
-    List<Commerciant> commerciants;
     List<Transaction> businessTransactions;
 
-    public BusinessAccount(String currency, User user, Bank bank) {
-        super(currency);
+    public BusinessAccount(Bank bank, String currency, User user) {
+        super(bank, currency);
         setAccountType(AccountType.BUSINESS);
         String name = user.getLastName() + " " + user.getFirstName();
         this.owner = new Owner(name, this);
@@ -95,6 +94,10 @@ public class BusinessAccount extends BankAccount {
 
     public void addBusinessTransaction(final Transaction transaction) {
         businessTransactions.add(transaction);
+    }
+
+    public boolean isBusinessUser(User user) {
+        return getUserRole(user) != null;
     }
 
 }

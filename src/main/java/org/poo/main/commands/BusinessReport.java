@@ -12,7 +12,9 @@ import org.poo.main.bank.BusinessAccount;
 import org.poo.main.bank.User;
 import org.poo.main.businessusers.Employee;
 import org.poo.main.businessusers.Manager;
+import org.poo.main.cashback.Commerciant;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -48,7 +50,7 @@ public class BusinessReport extends Command implements CommandInterface {
         if(getType().equals("transaction")) {
             return getTransactionReport(businessAccount);
         } else {
-            return getBusinessReport(businessAccount);
+            return getCommerciantReport(businessAccount);
         }
     }
 
@@ -114,10 +116,73 @@ public class BusinessReport extends Command implements CommandInterface {
         return report;
     }
 
-    public ObjectNode getBusinessReport(BusinessAccount businessAccount) {
+    public ObjectNode getCommerciantReport(BusinessAccount businessAccount) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode report = mapper.createObjectNode();
         report.put("command", "businessReport");
+
+        ObjectNode outputNode = mapper.createObjectNode();
+        outputNode.put("IBAN", getAccount());
+        outputNode.put("balance", businessAccount.getBalance());
+        outputNode.put("currency", businessAccount.getCurrency());
+        outputNode.put("spending limit", businessAccount.getSpendingLimit());
+        outputNode.put("deposit limit", businessAccount.getDepositLimit());
+
+        ArrayNode commerciantsArray = mapper.createArrayNode();
+        List<Commerciant> commerciants = businessAccount.getCommerciants();
+        if (commerciants == null) {
+            return report;
+        }
+
+        commerciants.sort((c1, c2) -> {
+            if (c1.getName() == null) return -1;
+            if (c2.getName() == null) return 1;
+            return c1.getName().compareToIgnoreCase(c2.getName());
+        });
+
+        for (int i = 0; i < commerciants.size(); i++) {
+            ObjectNode commerciant = mapper.createObjectNode();
+            commerciant.put("commerciant", commerciants.get(i).getName());
+
+            List<String> managers = new ArrayList<>();
+            List<String> employees =  new ArrayList<>();
+
+            for (int j = 0; j < commerciants.get(i).getUsers().size(); j++) {
+               User user = commerciants.get(i).getUsers().get(j);
+               String username = user.getLastName() + " " + user.getFirstName();
+               BusinessAccount.UserRole userRole = businessAccount.getUserRole(user);
+                if (userRole == BusinessAccount.UserRole.MANAGER) {
+                    managers.add(username);
+                } else {
+                    employees.add(username);
+                }
+            }
+
+            ArrayNode managersArray = mapper.createArrayNode();
+            for (String manager : managers) {
+                managersArray.add(manager);
+            }
+
+            commerciant.set("managers", managersArray);
+
+            ArrayNode employeesArray = mapper.createArrayNode();
+            for (String employee : employees) {
+                employeesArray.add(employee);
+            }
+
+            commerciant.set("employees", employeesArray);
+
+            commerciant.put("total received", commerciants.get(i).getAmountSpent());
+            if(commerciants.get(i).getAmountSpent() > 0) {
+                commerciantsArray.add(commerciant);
+            }
+        }
+        outputNode.set("commerciants", commerciantsArray);
+
+        outputNode.put("statistics type", "commerciant");
+
+        report.set("output", outputNode);
+        report.put("timestamp", getTimestamp());
 
         return report;
     }
@@ -143,4 +208,6 @@ public class BusinessReport extends Command implements CommandInterface {
         }
         return amountDeposited;
     }
+
+
 }

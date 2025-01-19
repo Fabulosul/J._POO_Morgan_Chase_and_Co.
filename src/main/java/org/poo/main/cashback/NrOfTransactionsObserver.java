@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.poo.main.bank.Bank;
 import org.poo.main.bank.BankAccount;
+import org.poo.main.bank.BusinessAccount;
 import org.poo.main.bank.User;
 
 import java.util.Iterator;
@@ -37,9 +38,18 @@ public class NrOfTransactionsObserver implements CashbackObserver {
             }
         }
 
+        double convertedAmount = bank.convertCurrency(paymentDetails.getAmount(),
+                paymentDetails.getCurrency(), "RON");
         if(commerciant.getType() == Commerciant.CashbackStrategy.NR_OF_TRANSACTIONS) {
-            bankAccount.setNrOfTransactions(bankAccount.getNrOfTransactions() + 1);
-            switch(bankAccount.getNrOfTransactions()) {
+            commerciant.setNrOfTransactions(commerciant.getNrOfTransactions() + 1);
+            if(bankAccount.getAccountType().equals("business")) {
+                BusinessAccount businessAccount = (BusinessAccount) bankAccount;
+                if(businessAccount.getUserRole(paymentDetails.getUser()) != BusinessAccount.UserRole.OWNER) {
+                    commerciant.setAmountSpent(commerciant.getAmountSpent() + convertedAmount);
+                    commerciant.addUser(paymentDetails.getUser());
+                }
+            }
+            switch(commerciant.getNrOfTransactions()) {
                 case 2:
                     bankAccount.addVoucher(new Voucher(0.02, FOOD));
                     break;

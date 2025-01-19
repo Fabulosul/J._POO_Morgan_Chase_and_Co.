@@ -156,7 +156,7 @@ public final class User {
 
     public BankAccount findClassicAccountByCurrency(final String currency) {
         for (BankAccount account : bankAccounts) {
-            if (account.getCurrency().equals(currency) && !account.getAccountType().equals("savings")) {
+            if (account.getCurrency().equals(currency) && account.getAccountType().equals("classic")) {
                 return account;
             }
         }

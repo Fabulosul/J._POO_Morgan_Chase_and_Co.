@@ -8,8 +8,8 @@ import lombok.Setter;
 public final class SavingsBankAccount extends BankAccount {
     private double interestRate;
 
-    public SavingsBankAccount(final String currency, final double interestRate) {
-        super(currency);
+    public SavingsBankAccount(final Bank bank, final String currency, final double interestRate) {
+        super(bank, currency);
         this.interestRate = interestRate;
         setAccountType(AccountType.SAVINGS);
     }

@@ -82,7 +82,7 @@ public class SplitPaymentDetails {
         } else {
             for (Participant participant : participants) {
                 BankAccount bankAccount = participant.getBankAccount();
-                bankAccount.payOnline(bank, participant.getAmount(), currency);
+                bankAccount.payWithoutCommission(bank, participant.getAmount(), currency);
             }
             addSuccessfulTransaction();
         }

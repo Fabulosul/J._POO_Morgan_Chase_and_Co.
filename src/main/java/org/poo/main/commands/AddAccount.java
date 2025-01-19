@@ -28,9 +28,9 @@ public final class AddAccount extends Command implements CommandInterface {
         User user = bank.getUserByMail(getEmail());
 
         BankAccount bankAccount = switch (getAccountType()) {
-            case "savings" -> new SavingsBankAccount(getCurrency(), getInterestRate());
-            case "business" -> new BusinessAccount(getCurrency(), user, bank);
-            case "classic" -> new BankAccount(getCurrency());
+            case "savings" -> new SavingsBankAccount(bank, getCurrency(), getInterestRate());
+            case "business" -> new BusinessAccount(bank, getCurrency(), user);
+            case "classic" -> new BankAccount(bank, getCurrency());
             default -> null;
         };
         if (bankAccount == null) {

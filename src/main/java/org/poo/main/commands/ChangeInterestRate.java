@@ -46,7 +46,7 @@ public final class ChangeInterestRate extends Command implements CommandInterfac
         }
         if (bankAccount.getAccountType().equals("savings")) {
             ((SavingsBankAccount) bankAccount).changeInterestRate(getInterestRate());
-            registerTransaction(user);
+            registerTransaction(bankAccount, user);
         } else {
             addErrorToOutput("This is not a savings account");
         }
@@ -96,11 +96,14 @@ public final class ChangeInterestRate extends Command implements CommandInterfac
      *
      * @param user -> the user for which the transaction needs to be registered
      */
-    private void registerTransaction(final User user) {
+    private void registerTransaction(final BankAccount bankAccount, final User user) {
         Transaction transaction = new Transaction
                 .TransactionBuilder(getTimestamp(),
                 "Interest rate of the account changed to " + getInterestRate())
                 .build();
         user.addTransaction(transaction);
+        if (bankAccount != null) {
+            bankAccount.addTransaction(transaction);
+        }
     }
 }
