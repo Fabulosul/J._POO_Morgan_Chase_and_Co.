@@ -4,10 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
 import org.poo.main.bank.Bank;
-import org.poo.main.bank.BankAccount;
-import org.poo.main.bank.Card;
-import org.poo.main.bank.User;
-import org.poo.main.bank.Transaction;
+import org.poo.main.bankaccounts.BankAccount;
+import org.poo.main.card.Card;
+import org.poo.main.user.User;
+import org.poo.main.transaction.Transaction;
 
 @Getter
 @Setter
@@ -42,7 +42,7 @@ public final class CreateCard extends Command implements CommandInterface {
         }
 
         Card card = new Card(cardType);
-        bankAccount.addCard(card, user);
+        bankAccount.addCard(card);
         registerTransaction(user, bankAccount, card.getCardNumber());
     }
 

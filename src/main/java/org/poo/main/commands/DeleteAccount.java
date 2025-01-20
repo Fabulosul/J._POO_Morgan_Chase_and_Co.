@@ -7,9 +7,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
 import org.poo.main.bank.Bank;
-import org.poo.main.bank.BankAccount;
-import org.poo.main.bank.Transaction;
-import org.poo.main.bank.User;
+import org.poo.main.bankaccounts.BankAccount;
+import org.poo.main.transaction.Transaction;
+import org.poo.main.user.User;
 import org.poo.main.cashback.CashbackObserver;
 
 @Getter
@@ -29,7 +29,8 @@ public final class DeleteAccount extends Command implements CommandInterface {
      * Method overridden from the CommandInterface to delete the account with the given iban.
      * It gets the user that has the account and the bank account associated with it
      * and then checks if the account can be deleted(its balance of the account is 0).
-     * If it can be deleted, it removes the account and adds a success message to the output.
+     * If it can be deleted, it removes the account, removes the account observers and
+     * adds a success message to the output.
      * If it can't be deleted, it registers a transaction error and adds an error message
      * to the output.
      * Also, if the user or the account is not found, it returns without doing anything.
@@ -46,7 +47,6 @@ public final class DeleteAccount extends Command implements CommandInterface {
         }
 
         if (bankAccount.getBalance() == 0) {
-            // remove observers
             for (int i = 0; i < bankAccount.getCashbackObservers().size(); i++) {
                 CashbackObserver observer = bankAccount.getCashbackObservers().get(i);
                 bankAccount.removeCashbackObserver(observer);

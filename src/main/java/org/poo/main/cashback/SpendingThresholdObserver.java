@@ -3,9 +3,11 @@ package org.poo.main.cashback;
 import lombok.Getter;
 import lombok.Setter;
 import org.poo.main.bank.Bank;
-import org.poo.main.bank.BankAccount;
-import org.poo.main.bank.BusinessAccount;
-import org.poo.main.bank.User;
+import org.poo.main.bankaccounts.BankAccount;
+import org.poo.main.bankaccounts.BusinessAccount;
+import org.poo.main.user.User;
+
+
 
 import java.util.Iterator;
 
@@ -40,7 +42,7 @@ public final class SpendingThresholdObserver implements CashbackObserver {
 
         double convertedAmount = bank.convertCurrency(paymentDetails.getAmount(),
                 paymentDetails.getCurrency(), "RON");
-        if (commerciant.getType() == Commerciant.CashbackStrategy.SPENDING_THRESHOLD) {
+        if (commerciant.getCashbackStrategy() == Commerciant.CashbackStrategy.SPENDING_THRESHOLD) {
             commerciant.setNrOfTransactions(commerciant.getNrOfTransactions() + 1);
             if (bankAccount.getAccountType().equals("business")) {
                 BusinessAccount businessAccount = (BusinessAccount) bankAccount;

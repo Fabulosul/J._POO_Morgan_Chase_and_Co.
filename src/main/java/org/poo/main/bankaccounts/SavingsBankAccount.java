@@ -1,7 +1,8 @@
-package org.poo.main.bank;
+package org.poo.main.bankaccounts;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.poo.main.bank.Bank;
 
 @Getter
 @Setter

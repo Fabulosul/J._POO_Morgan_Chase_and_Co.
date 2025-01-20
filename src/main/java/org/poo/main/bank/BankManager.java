@@ -15,6 +15,7 @@ import java.util.List;
 
 import org.poo.fileio.ExchangeInput;
 import org.poo.fileio.CommerciantInput;
+import org.poo.main.user.User;
 
 public final class BankManager {
     // Private constructor used to prevent instantiation of this utility class

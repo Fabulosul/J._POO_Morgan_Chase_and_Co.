@@ -1,4 +1,4 @@
-package org.poo.main.bank;
+package org.poo.main.transaction;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -91,6 +91,11 @@ public final class Transaction {
         return null;
     }
 
+    /**
+     * Getter used to return the amount of the transaction in double format.
+     *
+     * @return the amount of the transaction in the double format
+     */
     @JsonIgnore
     public double getRawAmount() {
         return amount;
@@ -152,6 +157,13 @@ public final class Transaction {
             this.description = description;
         }
 
+        /**
+         * Method used to set the username field of the transaction in the transactionBuilder
+         * with a given username.
+         *
+         * @param userName -> the username
+         * @return the transactionBuilder with the username field set
+         */
         public TransactionBuilder username(final String userName) {
             this.username = userName;
             return this;
@@ -169,6 +181,13 @@ public final class Transaction {
             return this;
         }
 
+        /**
+         * Method used to set the accountIban field of the transaction in the transactionBuilder
+         * with a given iban.
+         *
+         * @param iban -> the iban of the account
+         * @return the transactionBuilder with the accountIban field set
+         */
         public TransactionBuilder accountIban(final String iban) {
             this.accountIban = iban;
             return this;
@@ -308,31 +327,74 @@ public final class Transaction {
             return this;
         }
 
+        /**
+         * Method used to set the newPlanType field of the transaction in the transactionBuilder
+         * with a given plan name.
+         *
+         * @param newPlanName -> the name of the new plan
+         * @return the transactionBuilder with the newPlanType field set
+         */
         public TransactionBuilder newPlanType(final String newPlanName) {
             this.newPlanType = newPlanName;
             return this;
         }
 
+        /**
+         * Method used to set the splitPaymentType field of the transaction in the
+         * transactionBuilder with a given split payment type.
+         *
+         * @param splitPaymentTypeName -> the type of the split payment(custom/equal)
+         * @return the transactionBuilder with the splitPaymentType field set
+         */
         public TransactionBuilder splitPaymentType(final String splitPaymentTypeName) {
             this.splitPaymentType = splitPaymentTypeName;
             return this;
         }
 
+        /**
+         * Method used to set the amountForUsers field of the transaction in the transactionBuilder
+         * with a given list of amounts for each user.
+         *
+         * @param amountForUsersList -> the list of amounts for each user
+         * @return the transactionBuilder with the amountForUsers field set
+         */
         public TransactionBuilder amountForUsers(final List<Double> amountForUsersList) {
             this.amountForUsers = amountForUsersList;
             return this;
         }
 
+        /**
+         * Method used to set the currencyWithoutAmount field of the transaction in the
+         * transactionBuilder with a given boolean value.
+         *
+         * @param currencyNoAmount -> true if the currency should be displayed without the amount
+         *                          false otherwise
+         * @return the transactionBuilder with the currencyWithoutAmount field set
+         */
         public TransactionBuilder currencyWithoutAmount(final boolean currencyNoAmount) {
             this.currencyWithoutAmount = currencyNoAmount;
             return this;
         }
 
+        /**
+         * Method used to set the classicAccountIban field of the transaction in the
+         * transactionBuilder with a given iban of the classic account.
+         *
+         * @param iban -> the iban of the classic account
+         * @return the transactionBuilder with the classicAccountIban field set
+         */
         public TransactionBuilder classicAccountIban(final String iban) {
             this.classicAccountIban = iban;
             return this;
         }
 
+        /**
+         * Method used to set the savingsAccountIban field of the transaction in the
+         * transactionBuilder with a given iban of the savings account.
+         *
+         * @param iban -> the iban of the savings account
+         * @return the transactionBuilder with the savingsAccountIban field set
+         */
         public TransactionBuilder savingsAccountIban(final String iban) {
             this.savingsAccountIban = iban;
             return this;

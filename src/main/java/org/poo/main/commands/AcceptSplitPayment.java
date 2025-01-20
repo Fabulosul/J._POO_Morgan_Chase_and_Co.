@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
 import org.poo.main.bank.Bank;
-import org.poo.main.bank.User;
+import org.poo.main.user.User;
 
 @Getter
 @Setter
@@ -22,6 +22,14 @@ public final class AcceptSplitPayment extends Command implements CommandInterfac
         this.output = output;
     }
 
+    /**
+     * Method that accepts a split payment.
+     * It gets the user by email and accepts the split payment by calling the
+     * acceptSplitPayment method from the bank class.
+     * If the user is not found, it will return an error message.
+     *
+     * @see Bank#acceptSplitPayment(User, String) for more information.
+     */
     @Override
     public void execute() {
         User user = bank.getUserByMail(getEmail());

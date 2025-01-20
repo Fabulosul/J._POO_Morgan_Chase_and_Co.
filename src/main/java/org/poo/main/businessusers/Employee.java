@@ -2,21 +2,16 @@ package org.poo.main.businessusers;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.poo.main.bank.BusinessAccount;
-import org.poo.main.bank.Card;
-import org.poo.main.bank.User;
+import org.poo.main.bankaccounts.BusinessAccount;
+import org.poo.main.user.User;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Setter
 public final class Employee extends BusinessUser {
-    private List<Card> createdCards;
 
     public Employee(final String name, final BusinessAccount businessAccount) {
         super(name, businessAccount);
-        this.createdCards = new ArrayList<>();
     }
 
 
@@ -32,15 +27,5 @@ public final class Employee extends BusinessUser {
     @Override
     public boolean changeDepositLimit(final double newLimit) {
         return false;
-    }
-
-    @Override
-    public void addCard(final Card card) {
-        createdCards.add(card);
-    }
-
-    @Override
-    public void removeCard(final Card card) {
-        createdCards.remove(card);
     }
 }

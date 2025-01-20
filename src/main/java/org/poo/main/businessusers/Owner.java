@@ -2,8 +2,8 @@ package org.poo.main.businessusers;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.poo.main.bank.BusinessAccount;
-import org.poo.main.bank.User;
+import org.poo.main.bankaccounts.BusinessAccount;
+import org.poo.main.user.User;
 
 @Getter
 @Setter

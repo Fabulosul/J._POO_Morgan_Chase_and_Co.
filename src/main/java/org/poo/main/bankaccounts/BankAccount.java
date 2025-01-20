@@ -1,4 +1,4 @@
-package org.poo.main.bank;
+package org.poo.main.bankaccounts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -6,6 +6,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommerciantInput;
+import org.poo.main.bank.Bank;
+import org.poo.main.card.Card;
+import org.poo.main.transaction.Transaction;
+import org.poo.main.user.User;
 import org.poo.main.cashback.CashbackObserver;
 import org.poo.main.cashback.Commerciant;
 import org.poo.main.cashback.PaymentDetails;
@@ -27,17 +31,24 @@ public class BankAccount {
     private List<Card> cards;
     // Map that makes it easier to find a card by its number
     private Map<String, Card> cardNrToCardMap;
+    // Field that stores the minimum balance of the account
     private double minBalance;
     // Field that stores the transactions of the current account
     private ArrayNode transactions;
+    // A list of cashback observers that are notified when a payment is made
     private List<CashbackObserver> cashbackObservers;
+    // A list of vouchers that represent the nrOfTransactions type of cashback
     private List<Voucher> cashbackVouchers;
+    // Field that stores the number of transactions made with the account
     private int nrOfTransactions;
     enum AccountType {
         CLASSIC, SAVINGS, BUSINESS
     }
+    // The type of the account
     private AccountType accountType;
+    // A list of commerciants that offer cashback
     private List<Commerciant> commerciants;
+    // Filed that stores the amount spend at spendingThreshold commerciants
     private double spendingThresholdAmount;
 
 
@@ -62,6 +73,11 @@ public class BankAccount {
         this.spendingThresholdAmount = 0;
     }
 
+    /**
+     * Method used to return the account type as a string.
+     *
+     * @return a string representing the account type
+     */
     public final String getAccountType() {
         return switch (accountType) {
             case CLASSIC -> "classic";
@@ -75,7 +91,7 @@ public class BankAccount {
      *
      * @param card -> the card to be added to the account
      */
-    public void addCard(final Card card, final User user) {
+    public void addCard(final Card card) {
         cards.add(card);
         cardNrToCardMap.put(card.getCardNumber(), card);
     }
@@ -85,7 +101,7 @@ public class BankAccount {
      *
      * @param card -> the card to be removed from the account
      */
-    public void removeCard(final Card card, final User user) {
+    public void removeCard(final Card card) {
         cards.remove(card);
         cardNrToCardMap.remove(card.getCardNumber());
     }
@@ -151,6 +167,16 @@ public class BankAccount {
 
     }
 
+    /**
+     * Method used to make a payment without commission.
+     * It simply converts the amount to the currency of the account by calling the
+     * convertCurrency method found in the Bank class and then deducts the converted
+     * amount from the account.
+     *
+     * @param bank -> the bank that is used to convert the currency
+     * @param amount -> the amount of money to be deducted from the account
+     * @param paymentCurrency -> the currency of the payment
+     */
     public final void payWithoutCommission(final Bank bank, final double amount,
                                            final String paymentCurrency) {
         double convertedAmount = bank.convertCurrency(amount, paymentCurrency, getCurrency());
@@ -199,6 +225,15 @@ public class BankAccount {
         return true;
     }
 
+    /**
+     * Method used to transfer money from the current account to another account
+     * without commission. The process is similar to the one in the sendMoney method,
+     * but without the commission.
+     *
+     * @param bank -> the bank that is used to convert the currency if needed
+     * @param receiverAccount -> the account that receives the money
+     * @param amount -> the amount of money to be transferred
+     */
     public final void sendMoneyWithoutCommission(final Bank bank, final BankAccount receiverAccount,
                                                  final double amount) {
         double amountInRon = bank.convertCurrency(amount, currency, "RON");
@@ -208,7 +243,6 @@ public class BankAccount {
         }
 
         deductMoney(convertedAmount);
-
 
         if (receiverAccount.getCurrency().equals(currency)) {
             receiverAccount.addMoney(amount);
@@ -259,6 +293,17 @@ public class BankAccount {
         transactions.add(transactionNode);
     }
 
+    /**
+     * Method used to calculate the amount plus the commission for a payment.
+     * It gets the user of the current account from the bank and then calls the
+     * calculateCommission method from the ServicePlan class to calculate the
+     * commission for the given amount. At the end, it returns the amount plus
+     * the commission.
+     *
+     * @param bank -> the bank that is used to get the user of the current account
+     * @param amount -> the amount of money for which the commission is calculated
+     * @return the amount with commission that needs to be paid
+     */
     public final double calculateAmountWithCommission(final Bank bank, final double amount) {
         User user = bank.getUserByAccount(iban);
         if (user == null) {
@@ -268,20 +313,42 @@ public class BankAccount {
         return amount + commission;
     }
 
+    /**
+     * Method used to add a cashback observer to the list of observers.
+     *
+     * @param observer -> the observer to be added
+     */
     public final void addCashbackObserver(final CashbackObserver observer) {
         cashbackObservers.add(observer);
     }
 
+    /**
+     * Method used to remove a cashback observer from the list of observers.
+     *
+     * @param observer -> the observer to be removed
+     */
     public final void removeCashbackObserver(final CashbackObserver observer) {
         cashbackObservers.remove(observer);
     }
 
+    /**
+     * Method used to notify all the cashback observers that a payment was made.
+     *
+     * @param paymentDetails -> the details of the payment
+     */
     public final void notifyCashbackObservers(final PaymentDetails paymentDetails) {
         for (CashbackObserver observer : cashbackObservers) {
             observer.update(paymentDetails);
         }
     }
 
+    /**
+     * Method used to add a voucher to the list of cashback vouchers.
+     * THe vouchers represent the cashback that the user receives for a certain
+     * number of transactions.
+     *
+     * @param voucher -> the voucher to be added to the list
+     */
     public final void addVoucher(final Voucher voucher) {
         cashbackVouchers.add(voucher);
     }

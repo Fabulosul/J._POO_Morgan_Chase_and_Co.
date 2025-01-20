@@ -4,10 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
 import org.poo.main.bank.Bank;
-import org.poo.main.bank.BankAccount;
-import org.poo.main.bank.BusinessAccount;
-import org.poo.main.bank.Transaction;
-import org.poo.main.bank.User;
+import org.poo.main.bankaccounts.BankAccount;
+import org.poo.main.bankaccounts.BusinessAccount;
+import org.poo.main.transaction.Transaction;
+import org.poo.main.user.User;
 
 @Getter
 @Setter
@@ -23,6 +23,9 @@ public final class AddFunds extends Command implements CommandInterface {
      * Method overridden from the CommandInterface to add funds to a bank account.
      * It gets the user and the bank account by the account number and adds the amount
      * to the account.
+     * However, if the account is a business account, it checks if the user is an employee
+     * and if the deposit limit is exceeded. If the user is not an employee or the deposit
+     * limit is exceeded, the method is terminated without adding the funds.
      * If no user or bank account is found, the method is terminated.
      */
     @Override
@@ -52,6 +55,5 @@ public final class AddFunds extends Command implements CommandInterface {
             ((BusinessAccount) bankAccount).addBusinessTransaction(transaction);
         }
         bankAccount.addMoney(getAmount());
-
     }
 }

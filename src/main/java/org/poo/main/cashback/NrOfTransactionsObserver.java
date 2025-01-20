@@ -3,10 +3,7 @@ package org.poo.main.cashback;
 import lombok.Getter;
 import lombok.Setter;
 import org.poo.main.bank.Bank;
-import org.poo.main.bank.BankAccount;
-import org.poo.main.bank.BusinessAccount;
-
-import java.util.Iterator;
+import org.poo.main.bankaccounts.BankAccount;
 
 import static org.poo.main.cashback.Commerciant.Category.CLOTHES;
 import static org.poo.main.cashback.Commerciant.Category.FOOD;
@@ -29,6 +26,14 @@ public final class NrOfTransactionsObserver implements CashbackObserver {
         this.bankAccount = bankAccount;
     }
 
+    /**
+     * Method that applies the cashback strategy based on the number of transactions.
+     * It firstly checks if any previously obtained vouchers can be used.
+     * Then it updates the spending amount of the account and the number of transactions.
+     * Finally, if the current transaction is eligible for a voucher, it adds it to the account.
+     *
+     * @param paymentDetails -> the details of the payment
+     */
     @Override
     public void update(final PaymentDetails paymentDetails) {
         Commerciant commerciant = paymentDetails.getCommerciant();
@@ -36,27 +41,13 @@ public final class NrOfTransactionsObserver implements CashbackObserver {
             return;
         }
 
-        Iterator<Voucher> iterator = bankAccount.getCashbackVouchers().iterator();
-        while (iterator.hasNext()) {
-            Voucher voucher = iterator.next();
-            if (voucher.getCategory() == commerciant.getCategory()) {
-                bankAccount.addMoney(paymentDetails.getAmount() * voucher.getPercentage());
-                iterator.remove();
-            }
-        }
+        processVouchers(bankAccount, paymentDetails, commerciant);
 
         double convertedAmount = bank.convertCurrency(paymentDetails.getAmount(),
                 paymentDetails.getCurrency(), "RON");
-        if (commerciant.getType() == Commerciant.CashbackStrategy.NR_OF_TRANSACTIONS) {
-            commerciant.setNrOfTransactions(commerciant.getNrOfTransactions() + 1);
-            if (bankAccount.getAccountType().equals("business")) {
-                BusinessAccount businessAccount = (BusinessAccount) bankAccount;
-                if (businessAccount.getUserRole(paymentDetails.getUser())
-                        != BusinessAccount.UserRole.OWNER) {
-                    commerciant.setAmountSpent(commerciant.getAmountSpent() + convertedAmount);
-                    commerciant.addUser(paymentDetails.getUser());
-                }
-            }
+        if (commerciant.getCashbackStrategy() == Commerciant.CashbackStrategy.NR_OF_TRANSACTIONS) {
+            processPayment(paymentDetails, commerciant, convertedAmount, bankAccount);
+
             switch (commerciant.getNrOfTransactions()) {
                 case TRANSACTION_THRESHOLD_FOOD:
                     bankAccount.addVoucher(new Voucher(FOOD_CASHBACK, FOOD));

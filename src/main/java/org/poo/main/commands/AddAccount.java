@@ -4,11 +4,11 @@ import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
 import org.poo.main.bank.Bank;
-import org.poo.main.bank.BankAccount;
-import org.poo.main.bank.BusinessAccount;
-import org.poo.main.bank.SavingsBankAccount;
-import org.poo.main.bank.Transaction;
-import org.poo.main.bank.User;
+import org.poo.main.bankaccounts.BankAccount;
+import org.poo.main.bankaccounts.BusinessAccount;
+import org.poo.main.bankaccounts.SavingsBankAccount;
+import org.poo.main.transaction.Transaction;
+import org.poo.main.user.User;
 import org.poo.main.cashback.NrOfTransactionsObserver;
 import org.poo.main.cashback.SpendingThresholdObserver;
 
@@ -26,6 +26,8 @@ public final class AddAccount extends Command implements CommandInterface {
      * Method overridden from the CommandInterface to add a new account to a given user.
      * It gets the user by email, creates a new account with the given type and adds it
      * to the user.
+     * It also creates two observers for the cashback system, one for the number of transactions
+     * and one for the spending threshold and adds them to the bank account.
      * At the end, it registers this transaction to the user and the bank account.
      */
     @Override

@@ -2,7 +2,7 @@ package org.poo.main.cashback;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.poo.main.bank.User;
+import org.poo.main.user.User;
 
 
 @Getter

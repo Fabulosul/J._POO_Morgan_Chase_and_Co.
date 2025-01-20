@@ -5,9 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
 import org.poo.main.bank.Bank;
-import org.poo.main.bank.BankAccount;
-import org.poo.main.bank.Transaction;
-import org.poo.main.bank.User;
+import org.poo.main.bankaccounts.BankAccount;
+import org.poo.main.transaction.Transaction;
+import org.poo.main.user.User;
 
 @Getter
 @Setter
@@ -23,6 +23,20 @@ public final class WithdrawSavings extends Command implements CommandInterface {
         this.output = output;
     }
 
+    /**
+     * Method used to withdraw money from a savings account and deposit it into a classic account.
+     * If all the conditions are met, the money is transferred from the savings account to
+     * the classic account and a transaction is added to the user's transaction list.
+     * To find the classic account, the method findClassicAccountByCurrency is called
+     * from the User class.
+     * If the user does not have a classic account, does not have the minimum age required,
+     * the account is not of type savings, the account is not found or the user does not
+     * have enough money, an error transaction is added to the user's transaction list.
+     *
+     * @implNote The method uses the sendMoneyWithoutCommission method from the BankAccount
+     * class to transfer the money from the savings account to the classic account because
+     * no commission is applied.
+     */
     @Override
     public void execute() {
         User user = bank.getUserByAccount(getAccount());
@@ -63,6 +77,9 @@ public final class WithdrawSavings extends Command implements CommandInterface {
         user.addTransaction(transaction);
     }
 
+    /**
+     * Method used to register an error transaction based on a given message.
+     */
     public void registerTransactionError(final BankAccount bankAccount, final User user,
                                          final String message) {
         Transaction transaction = new Transaction

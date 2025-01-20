@@ -7,10 +7,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
 import org.poo.main.bank.Bank;
-import org.poo.main.bank.BankAccount;
-import org.poo.main.bank.SavingsBankAccount;
-import org.poo.main.bank.Transaction;
-import org.poo.main.bank.User;
+import org.poo.main.bankaccounts.BankAccount;
+import org.poo.main.bankaccounts.SavingsBankAccount;
+import org.poo.main.transaction.Transaction;
+import org.poo.main.user.User;
 
 @Getter
 @Setter
@@ -45,7 +45,7 @@ public final class AddInterest extends Command implements CommandInterface {
         if (bankAccount.getAccountType().equals("savings")) {
             double interestIncome = ((SavingsBankAccount) bankAccount).addInterest();
             String currency = bankAccount.getCurrency();
-            registerSuccessfullTransaction(bankAccount, user, interestIncome, currency);
+            registerSuccessfulTransaction(bankAccount, user, interestIncome, currency);
         } else {
             addErrorToOutput();
         }
@@ -71,8 +71,19 @@ public final class AddInterest extends Command implements CommandInterface {
         output.add(errorNode);
     }
 
-    private void registerSuccessfullTransaction(final BankAccount bankAccount, final User user,
-                                                final double amount, final String currency) {
+    /**
+     * Helper method that creates a new transaction stating that the interest rate has been
+     * added to the account.
+     * If the bankAccount is not null, it also adds the transaction
+     * to the bankAccount's transaction list.
+     *
+     * @param bankAccount -> the bank account to which the transaction is added
+     * @param user -> the user to which the transaction is added
+     * @param amount -> the amount of the transaction (interest rate)
+     * @param currency -> the currency of the transaction
+     */
+    private void registerSuccessfulTransaction(final BankAccount bankAccount, final User user,
+                                               final double amount, final String currency) {
         Transaction transaction = new Transaction
                 .TransactionBuilder(getTimestamp(), "Interest rate income")
                 .amount(amount)

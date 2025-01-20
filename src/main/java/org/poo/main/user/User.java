@@ -1,4 +1,4 @@
-package org.poo.main.bank;
+package org.poo.main.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -6,11 +6,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.UserInput;
+import org.poo.main.bankaccounts.BankAccount;
 import org.poo.main.serviceplans.GoldUserPlan;
 import org.poo.main.serviceplans.SilverUserPlan;
 import org.poo.main.serviceplans.StandardUserPlan;
 import org.poo.main.serviceplans.StudentPlan;
 import org.poo.main.serviceplans.UserPlan;
+import org.poo.main.transaction.Transaction;
 
 
 import java.util.ArrayList;
@@ -35,10 +37,12 @@ public final class User {
     private Map<String, BankAccount> aliasToAccountMap;
     // An array of transactions that the user has made
     private ArrayNode transactionsReport;
+    // A counter that keeps track of the number of transactions made by a silver user
+    // that are over 300 RON
     private int upgradeCounter;
     public static final int CURRENT_YEAR = 2025;
-
-
+    private static final int GOLD_AUTO_UPGRADE_THRESHOLD = 300;
+    private static final long NUM_TRANSACTIONS_AUTO_UPGRADE = 5;
 
     public User(final UserInput user) {
         this.firstName = user.getFirstName();
@@ -145,6 +149,13 @@ public final class User {
         transactionsReport.add(transactionNode);
     }
 
+    /**
+     * Method used to change the service plan of the user.
+     * It changes the service plan of the user based on the new plan type
+     * by creating a new plan object and assigning it to the servicePlan field.
+     *
+     * @param newPlanType -> the new plan type to be assigned
+     */
     public void changeServicePlan(final String newPlanType) {
         switch (newPlanType) {
             case "student":
@@ -164,6 +175,14 @@ public final class User {
         }
     }
 
+    /**
+     * Method used to find a classic account by its currency.
+     * It iterates through the bankAccounts list and returns the first
+     * classic account that has the given currency.
+     *
+     * @param currency -> the currency of the searched account
+     * @return the first classic account with the given currency
+     */
     public BankAccount findClassicAccountByCurrency(final String currency) {
         for (BankAccount account : bankAccounts) {
             if (account.getCurrency().equals(currency)
@@ -172,6 +191,35 @@ public final class User {
             }
         }
         return null;
+    }
+
+    /**
+     * Method used to check if a user is eligible for an auto-upgrade.
+     * It checks if the user has a silver plan and if the upgrade counter
+     * is greater than 5.
+     * If the user has made enough transactions toqq meet the criteria, the user
+     * is upgraded to a gold plan and a transaction is added to the user's transaction list.
+     *
+     * @param bankAccount -> the bank account that the user has made the transaction from
+     * @param amountInRon -> the amount of the transaction in RON
+     * @param timestamp -> the timestamp of the transaction
+     */
+    public void checkForAutoUpgrade(final BankAccount bankAccount, final double amountInRon,
+                                    final int timestamp) {
+        if (this.getServicePlan().getPlanName().equals("silver")
+                && amountInRon >= GOLD_AUTO_UPGRADE_THRESHOLD) {
+            this.setUpgradeCounter(this.getUpgradeCounter() + 1);
+            if (this.getUpgradeCounter() == NUM_TRANSACTIONS_AUTO_UPGRADE) {
+                this.changeServicePlan("gold");
+                Transaction transaction = new Transaction
+                        .TransactionBuilder(timestamp, "Upgrade plan")
+                        .accountIban(bankAccount.getIban())
+                        .newPlanType("gold")
+                        .build();
+                this.addTransaction(transaction);
+                bankAccount.addTransaction(transaction);
+            }
+        }
     }
 
 

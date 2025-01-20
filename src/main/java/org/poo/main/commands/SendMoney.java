@@ -8,10 +8,10 @@ import lombok.Setter;
 import org.poo.fileio.CommandInput;
 import org.poo.fileio.CommerciantInput;
 import org.poo.main.bank.Bank;
-import org.poo.main.bank.BankAccount;
-import org.poo.main.bank.BusinessAccount;
-import org.poo.main.bank.User;
-import org.poo.main.bank.Transaction;
+import org.poo.main.bankaccounts.BankAccount;
+import org.poo.main.bankaccounts.BusinessAccount;
+import org.poo.main.user.User;
+import org.poo.main.transaction.Transaction;
 import org.poo.main.cashback.Commerciant;
 import org.poo.main.cashback.PaymentDetails;
 
@@ -34,13 +34,22 @@ public final class SendMoney extends Command implements CommandInterface {
      * It gets the sender and receiver accounts and checks if the sender has enough funds
      * to make the transfer. If the sender has enough funds, the transfer transaction is
      * registered in the sender's and receiver's transaction history.
+     * Also, if the iban given for the sender is the iban of a commerciant, the method
+     * handles the case of a commerciant transfer by calling the handleCommerciantCase method.
+     * Then, if the receiver's account is a business account, a transaction is registered in
+     * the business account's transaction history.
      * If the sender does not have enough funds, an error transaction is registered in the
      * sender's transaction report.
-     * Also, if the sender, sender's account or receiver's account are not found, the method
-     * returns without executing the transfer.
+     * It is important to mention that if the sender, sender's account or receiver's account
+     * are not found, the method returns without executing the transfer.
+     * Finally, the method checks if the sender is eligible for an auto-upgrade and if he is,
+     * it registers the transaction in the sender's transaction history and does the upgrade
+     * to gold.
      *
      * @implNote The method checks first if the receiver is an alias and then if it is an IBAN
      * because the search by alias is faster due to the use of a HashMap.
+     * The method also checks if the receiver is a commerciant and if the sender has
+     * a commerciant with the same name as the receiver.
      */
     @Override
     public void execute() {
@@ -91,22 +100,21 @@ public final class SendMoney extends Command implements CommandInterface {
         }
         double amountInRon = bank.convertCurrency(getAmount(), senderAccount.getCurrency(),
                 "RON");
-        if (sender.getServicePlan().getPlanName().equals("silver")
-                && amountInRon >= GOLD_AUTO_UPGRADE_THRESHOLD) {
-            sender.setUpgradeCounter(sender.getUpgradeCounter() + 1);
-            if (sender.getUpgradeCounter() == NUM_TRANSACTIONS_AUTO_UPGRADE) {
-                sender.changeServicePlan("gold");
-                Transaction transaction = new Transaction
-                        .TransactionBuilder(getTimestamp(), "Upgrade plan")
-                        .accountIban(senderAccount.getIban())
-                        .newPlanType("gold")
-                        .build();
-                sender.addTransaction(transaction);
-                senderAccount.addTransaction(transaction);
-            }
-        }
+        sender.checkForAutoUpgrade(senderAccount, amountInRon, getTimestamp());
     }
 
+    /**
+     * Method used to handle the case of a transfer to a commerciant.
+     * It searches for the commerciant with the same iban as the receiver in the sender's
+     * commerciant list and if it finds it, it registers the transaction in the sender's
+     * transaction history and in the sender's account transaction history.
+     * Also, it notifies the cashback observers to check if the sender is eligible for a cashback
+     * and checks if the sender is eligible for an auto-upgrade.
+     *
+     * @param sender -> the person who sends the money
+     * @param senderAccount -> the account of the person who sends the money
+     * @param commerciantIban -> the IBAN of the commerciant
+     */
     public void handleCommerciantCase(final User sender, final BankAccount senderAccount,
                                       final String commerciantIban) {
         String commmerciantName = null;
@@ -138,20 +146,7 @@ public final class SendMoney extends Command implements CommandInterface {
                 sender.addTransaction(senderTransaction);
                 double amountInRon = bank.convertCurrency(getAmount(), senderAccount.getCurrency(),
                         "RON");
-                if (sender.getServicePlan().getPlanName().equals("silver")
-                        && amountInRon >= GOLD_AUTO_UPGRADE_THRESHOLD) {
-                    sender.setUpgradeCounter(sender.getUpgradeCounter() + 1);
-                    if (sender.getUpgradeCounter() == NUM_TRANSACTIONS_AUTO_UPGRADE) {
-                        sender.changeServicePlan("gold");
-                        Transaction transaction = new Transaction
-                                .TransactionBuilder(getTimestamp(), "Upgrade plan")
-                                .accountIban(senderAccount.getIban())
-                                .newPlanType("gold")
-                                .build();
-                        sender.addTransaction(transaction);
-                        senderAccount.addTransaction(transaction);
-                    }
-                }
+                sender.checkForAutoUpgrade(senderAccount, amountInRon, getTimestamp());
                 return;
             }
        }
@@ -229,6 +224,11 @@ public final class SendMoney extends Command implements CommandInterface {
         receiverAccount.addTransaction(receiverTransaction);
     }
 
+    /**
+     * Method used to add an error to the output ArrayNode with a given description.
+     *
+     * @param description -> the description of the error
+     */
     public void addErrorToOutput(final String description) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode objectNode = mapper.createObjectNode();

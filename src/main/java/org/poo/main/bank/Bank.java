@@ -4,8 +4,11 @@ import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommerciantInput;
 import org.poo.fileio.ExchangeInput;
+import org.poo.main.bankaccounts.BankAccount;
+import org.poo.main.card.Card;
 import org.poo.main.cashback.Commerciant;
 import org.poo.main.splitpayment.SplitPaymentDetails;
+import org.poo.main.user.User;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +30,7 @@ public final class Bank {
     private Map<String, Commerciant> nameToCommerciantMap;
     // A map that stores the users by email to enable faster searching.
     private Map<String, User> emailToUserMap;
+    // A list that stores the split payments.
     private List<SplitPaymentDetails> splitPayments;
 
     public Bank(final List<User> users, final List<ExchangeInput> exchangeRates,
@@ -271,18 +275,36 @@ public final class Bank {
         return null;
     }
 
-    public Commerciant getCommerciantByName(final String commerciant) {
-        return nameToCommerciantMap.get(commerciant);
-    }
-
+    /**
+     * Helper method used to add a split payment to the splitPayments list.
+     *
+     * @param splitPaymentDetails -> the information about the split payment
+     */
     public void addSplitPayment(final SplitPaymentDetails splitPaymentDetails) {
         splitPayments.add(splitPaymentDetails);
     }
 
+    /**
+     * Helper method used to remove a split payment from the splitPayments list.
+     *
+     * @param splitPaymentDetails -> the information about the split payment
+     */
     public void removeSplitPayment(final SplitPaymentDetails splitPaymentDetails) {
         splitPayments.remove(splitPaymentDetails);
     }
 
+    /**
+     * Method used in the case when a user accepts a split payment.
+     * The method iterates through all split payments and finds the one that has the same
+     * payment type as the one accepted by the user. Then, it calls the acceptPayment method
+     * from the User class. If this method returns true it means that all users accepted
+     * the payment, all the handling has been done and the split payment is removed.
+     *
+     * @param user -> the user that accepted the split payment
+     * @param splitPaymentType -> the type of the split payment
+     *
+     * @see SplitPaymentDetails#acceptPayment(User) for more details
+     */
     public void acceptSplitPayment(final User user, final String splitPaymentType) {
         SplitPaymentDetails.SplitPaymentType paymentType;
         paymentType = splitPaymentType.equals("custom")
@@ -299,6 +321,17 @@ public final class Bank {
         }
     }
 
+    /**
+     * Method used when a user rejects a split payment.
+     * It iterates through all split payments and finds the one that has the same
+     * payment type as the one rejected by the user. Then, it calls the rejectPayment method
+     * from the SplitPaymentDetails class and removes the split payment from the list.
+     *
+     * @param user -> the user that rejected the split payment
+     * @param splitPaymentType -> the type of the split payment
+     *
+     * @see SplitPaymentDetails#rejectPayment(User) for more details
+     */
     public void rejectSplitPayment(final User user, final String splitPaymentType) {
         SplitPaymentDetails.SplitPaymentType paymentType;
         paymentType = splitPaymentType.equals("custom")

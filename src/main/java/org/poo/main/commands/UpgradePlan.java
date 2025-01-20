@@ -7,9 +7,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
 import org.poo.main.bank.Bank;
-import org.poo.main.bank.BankAccount;
-import org.poo.main.bank.Transaction;
-import org.poo.main.bank.User;
+import org.poo.main.bankaccounts.BankAccount;
+import org.poo.main.transaction.Transaction;
+import org.poo.main.user.User;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -46,22 +46,22 @@ public final class UpgradePlan extends Command implements CommandInterface {
         upgradePlanFees.put("silver", silverUserPlanFees);
     }
 
+    /**
+     * Method used to upgrade the plan of a user.
+     * If the user does not exist, an error is added to the output.
+     * If the user already has the new plan, an error is added to the output.
+     * If the user plan is higher than the new plan, an error is added to the output.
+     * Then, the upgrade fee is calculated and if the user has enough money, the fee is deducted
+     * from the account and the user's plan is changed by calling the changeServicePlan method
+     * from the User class.
+     *
+     * @see User#changeServicePlan(String)
+     */
     @Override
     public void execute() {
         User user = bank.getUserByAccount(getAccount());
         if (user == null) {
-            ObjectMapper mapper = new ObjectMapper();
-            ObjectNode objectNode = mapper.createObjectNode();
-            objectNode.put("command", "upgradePlan");
-
-            ObjectNode outputNode = mapper.createObjectNode();
-            outputNode.put("description", "Account not found");
-            outputNode.put("timestamp", getTimestamp());
-
-            objectNode.set("output", outputNode);
-            objectNode.put("timestamp", getTimestamp());
-
-            output.add(objectNode);
+            addErrorToOutput();
             return;
         }
         BankAccount bankAccount = user.getAccountByIban(getAccount());
@@ -98,10 +98,43 @@ public final class UpgradePlan extends Command implements CommandInterface {
 
     }
 
+    /**
+     * Helper method used to add an error to the output
+     * stating that the account was not found.
+     */
+    private void addErrorToOutput() {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode objectNode = mapper.createObjectNode();
+        objectNode.put("command", "upgradePlan");
+
+        ObjectNode outputNode = mapper.createObjectNode();
+        outputNode.put("description", "Account not found");
+        outputNode.put("timestamp", getTimestamp());
+
+        objectNode.set("output", outputNode);
+        objectNode.put("timestamp", getTimestamp());
+
+        output.add(objectNode);
+    }
+
+    /**
+     * Helper method used to get the upgrade fee from the upgradePlanFees map.
+     *
+     * @param oldPlanName -> the name of the old plan
+     * @param newPlanName -> the name of the new plan
+     * @return the upgrade fee needed to upgrade the plan
+     */
     public double getUpgradeFee(final String oldPlanName, final String newPlanName) {
         return upgradePlanFees.get(oldPlanName).get(newPlanName);
     }
 
+    /**
+     * Helper method used to register a transaction error based on the message.
+     *
+     * @param bankAccount -> the bank account of the user
+     * @param user -> the user that wants to upgrade the plan
+     * @param message -> the error message
+     */
     public void registerTransactionError(final BankAccount bankAccount, final User user,
                                          final String message) {
         Transaction transaction = new Transaction

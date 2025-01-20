@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
 import org.poo.main.bank.Bank;
-import org.poo.main.bank.User;
+import org.poo.main.user.User;
 
 @Getter
 @Setter
@@ -22,6 +22,14 @@ public final class RejectSplitPayment extends Command implements CommandInterfac
         this.output = output;
     }
 
+    /**
+     * Method used to reject a split payment.
+     * If the user is not found, an error message is added to the output.
+     * If the user is found, the split payment is rejected by calling the
+     * rejectSplitPayment method from the bank class.
+     *
+     * @see Bank#rejectSplitPayment(User, String) for more information.
+     */
     @Override
     public void execute() {
         User user = bank.getUserByMail(getEmail());

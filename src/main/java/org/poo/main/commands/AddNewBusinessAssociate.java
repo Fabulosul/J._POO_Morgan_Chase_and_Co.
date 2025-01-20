@@ -4,9 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
 import org.poo.main.bank.Bank;
-import org.poo.main.bank.BankAccount;
-import org.poo.main.bank.BusinessAccount;
-import org.poo.main.bank.User;
+import org.poo.main.bankaccounts.BankAccount;
+import org.poo.main.bankaccounts.BusinessAccount;
+import org.poo.main.user.User;
 import org.poo.main.businessusers.Owner;
 
 @Getter
@@ -19,6 +19,12 @@ public final class AddNewBusinessAssociate extends Command implements CommandInt
         this.bank = bank;
     }
 
+    /**
+     * Method used to find the owner of the business account and add a new associate to it
+     * by calling the addNewAssociate method from the Owner class.
+     *
+     * @see Owner#addNewAssociate(User, String) for more details about the implementation.
+     */
     @Override
     public void execute() {
         User user = bank.getUserByMail(getEmail());

@@ -4,8 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
 import org.poo.main.bank.Bank;
-import org.poo.main.bank.BankAccount;
-import org.poo.main.bank.User;
+import org.poo.main.bankaccounts.BankAccount;
+import org.poo.main.user.User;
 import org.poo.main.splitpayment.SplitPaymentDetails;
 
 @Getter
@@ -21,14 +21,9 @@ public final class SplitPayment extends Command implements CommandInterface {
     /**
      * Method overridden from CommandInterface that does a split payment between
      * multiple accounts.
-     * It calculates the amount to be paid to each account and checks if every account
-     * have sufficient funds for the payment.
-     * Then, it checks if the accounts are valid and if they have sufficient funds
-     * by calling the findInvalidAccount method.
-     * If an account does not have sufficient funds, it adds an error message to that
-     * particular account stating that it has insufficient funds for the payment.
-     * If all accounts have sufficient funds, it calls the addTransactions method to
-     * make the payment and add the transaction to the accounts.
+     * It creates a SplitPaymentDetails object depending on the split payment type
+     * and adds the participants to it by iterating through the accounts and users.
+     * The SplitPaymentDetails object is then added to the bank's list of split payments.
      */
     @Override
     public void execute() {

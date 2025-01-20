@@ -7,10 +7,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
 import org.poo.main.bank.Bank;
-import org.poo.main.bank.BankAccount;
-import org.poo.main.bank.Card;
-import org.poo.main.bank.User;
-import org.poo.main.bank.Transaction;
+import org.poo.main.bankaccounts.BankAccount;
+import org.poo.main.card.Card;
+import org.poo.main.user.User;
+import org.poo.main.transaction.Transaction;
 
 @Getter
 @Setter
@@ -25,7 +25,14 @@ public final class CashWithdrawal extends Command implements CommandInterface {
         this.output = output;
     }
 
-
+    /**
+     * Method used to do a cash withdrawal from a bank account.
+     * It calculates the amount with the commission and checks if the account has sufficient funds.
+     * If the account has sufficient funds, it withdraws the amount and adds
+     * a transaction to the user.
+     * Also, if the card is a one-time, it regenerates it.
+     *
+     */
     @Override
     public void execute() {
         if (getEmail() == null) {
@@ -51,9 +58,9 @@ public final class CashWithdrawal extends Command implements CommandInterface {
         if (bankAccount.hasSufficientFunds(amountWithCommission, WITHDRAWAL_CURRENCY, bank)) {
             bankAccount.payWithCommission(bank, getAmount(), WITHDRAWAL_CURRENCY);
             if (card.isOneTimeCard() && bankAccount.getBalance() == 0) {
-                bankAccount.removeCard(card, user);
+                bankAccount.removeCard(card);
                 Card newCard = new Card("oneTime");
-                bankAccount.addCard(newCard, user);
+                bankAccount.addCard(newCard);
             }
             Transaction transaction = new Transaction
                     .TransactionBuilder(getTimestamp(),
@@ -66,6 +73,12 @@ public final class CashWithdrawal extends Command implements CommandInterface {
         }
     }
 
+    /**
+     * Helper method used to register a transaction error based on a description.
+     *
+     * @param user -> the user to which the transaction is added
+     * @param description -> the description of the transaction
+     */
     public void registerTransactionError(final User user, final String description) {
         Transaction transaction = new Transaction
                 .TransactionBuilder(getTimestamp(),
@@ -74,6 +87,13 @@ public final class CashWithdrawal extends Command implements CommandInterface {
         user.addTransaction(transaction);
     }
 
+    /**
+     * Helper method used to add an error to the output.
+     * It creates an object node with the command, the description and the timestamp
+     * and adds it to the output array.
+     *
+     * @param description -> the description of the error
+     */
     public void addErrorToOutput(final String description) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode objectNode = mapper.createObjectNode();

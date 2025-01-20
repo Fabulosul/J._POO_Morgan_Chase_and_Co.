@@ -1,4 +1,4 @@
-package org.poo.main.bank;
+package org.poo.main.card;
 
 import lombok.Getter;
 import lombok.Setter;

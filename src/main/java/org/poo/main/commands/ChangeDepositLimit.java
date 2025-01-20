@@ -4,9 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
 import org.poo.main.bank.Bank;
-import org.poo.main.bank.BankAccount;
-import org.poo.main.bank.BusinessAccount;
-import org.poo.main.bank.User;
+import org.poo.main.bankaccounts.BankAccount;
+import org.poo.main.bankaccounts.BusinessAccount;
+import org.poo.main.user.User;
 import org.poo.main.businessusers.BusinessUser;
 
 @Getter
@@ -19,6 +19,14 @@ public final class ChangeDepositLimit extends Command implements CommandInterfac
         this.bank = bank;
     }
 
+    /**
+     * Method used to change the deposit limit of a business user.
+     * It checks is the account is a business account and retrieves the business user
+     * by the name of the user. Then calls the changeDepositLimit method from the business user
+     * class.
+     *
+     * @see BusinessUser#changeDepositLimit(double)
+     */
     @Override
     public void execute() {
         User user = bank.getUserByMail(getEmail());
