@@ -33,7 +33,11 @@ public final class AddFunds extends Command implements CommandInterface {
         }
         if (bankAccount.getAccountType().equals("business")) {
             BusinessAccount.UserRole userRole = ((BusinessAccount) bankAccount).getUserRole(user);
-            if (userRole == null || userRole.equals(BusinessAccount.UserRole.EMPLOYEE)) {
+            if (userRole == null) {
+                return;
+            }
+            if(userRole.equals(BusinessAccount.UserRole.EMPLOYEE)
+            && ((BusinessAccount) bankAccount).getDepositLimit() < getAmount()) {
                 return;
             }
             Transaction transaction = new Transaction

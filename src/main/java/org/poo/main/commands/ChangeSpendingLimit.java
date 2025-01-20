@@ -37,13 +37,24 @@ public class ChangeSpendingLimit extends Command implements CommandInterface {
             return;
         }
         if(!businessAccount.getAccountType().equals("business")) {
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode objectNode = mapper.createObjectNode();
+
+            objectNode.put("command", "changeSpendingLimit");
+
+            ObjectNode outputNode = mapper.createObjectNode();
+            outputNode.put("description", "This is not a business account.");
+            outputNode.put("timestamp", getTimestamp());
+
+            objectNode.set("output", outputNode);
+            objectNode.put("timestamp", getTimestamp());
+
+            output.add(objectNode);
             return;
         }
         String username = user.getLastName() + " " + user.getFirstName();
         BusinessUser businessUser = ((BusinessAccount) businessAccount).getBusinessUserByName(username);
-        if(businessUser.changeSpendingLimit(getAmount())) {
-            // do nothing
-        } else {
+        if(!businessUser.changeSpendingLimit(getAmount())) {
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode objectNode = mapper.createObjectNode();
 
