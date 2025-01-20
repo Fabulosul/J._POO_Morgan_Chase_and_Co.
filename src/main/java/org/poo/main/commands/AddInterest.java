@@ -6,7 +6,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
-import org.poo.main.bank.*;
+import org.poo.main.bank.Bank;
+import org.poo.main.bank.BankAccount;
+import org.poo.main.bank.SavingsBankAccount;
+import org.poo.main.bank.Transaction;
+import org.poo.main.bank.User;
 
 @Getter
 @Setter
@@ -67,7 +71,8 @@ public final class AddInterest extends Command implements CommandInterface {
         output.add(errorNode);
     }
 
-    private void registerSuccessfullTransaction(BankAccount bankAccount, User user, double amount, String currency) {
+    private void registerSuccessfullTransaction(final BankAccount bankAccount, final User user,
+                                                final double amount, final String currency) {
         Transaction transaction = new Transaction
                 .TransactionBuilder(getTimestamp(), "Interest rate income")
                 .amount(amount)

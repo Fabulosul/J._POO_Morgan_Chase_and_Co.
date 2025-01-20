@@ -3,7 +3,12 @@ package org.poo.main.commands;
 import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
-import org.poo.main.bank.*;
+import org.poo.main.bank.Bank;
+import org.poo.main.bank.BankAccount;
+import org.poo.main.bank.BusinessAccount;
+import org.poo.main.bank.SavingsBankAccount;
+import org.poo.main.bank.Transaction;
+import org.poo.main.bank.User;
 import org.poo.main.cashback.NrOfTransactionsObserver;
 import org.poo.main.cashback.SpendingThresholdObserver;
 
@@ -36,9 +41,11 @@ public final class AddAccount extends Command implements CommandInterface {
         if (bankAccount == null) {
             return;
         }
-        SpendingThresholdObserver spendingThresholdObserver = new SpendingThresholdObserver(bank, bankAccount);
+        SpendingThresholdObserver spendingThresholdObserver =
+                new SpendingThresholdObserver(bank, bankAccount);
         bankAccount.addCashbackObserver(spendingThresholdObserver);
-        NrOfTransactionsObserver nrOfTransactionsObserver = new NrOfTransactionsObserver(bank, bankAccount);
+        NrOfTransactionsObserver nrOfTransactionsObserver =
+                new NrOfTransactionsObserver(bank, bankAccount);
         bankAccount.addCashbackObserver(nrOfTransactionsObserver);
         user.addBankAccount(bankAccount);
 

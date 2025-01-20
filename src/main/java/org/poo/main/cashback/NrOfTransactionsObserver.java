@@ -5,27 +5,34 @@ import lombok.Setter;
 import org.poo.main.bank.Bank;
 import org.poo.main.bank.BankAccount;
 import org.poo.main.bank.BusinessAccount;
-import org.poo.main.bank.User;
 
 import java.util.Iterator;
 
-import static org.poo.main.cashback.Commerciant.Category.*;
+import static org.poo.main.cashback.Commerciant.Category.CLOTHES;
+import static org.poo.main.cashback.Commerciant.Category.FOOD;
+import static org.poo.main.cashback.Commerciant.Category.TECH;
 
 @Getter
 @Setter
-public class NrOfTransactionsObserver implements CashbackObserver {
+public final class NrOfTransactionsObserver implements CashbackObserver {
     private Bank bank;
     private BankAccount bankAccount;
+    private static final int TRANSACTION_THRESHOLD_FOOD = 2;
+    private static final int TRANSACTION_THRESHOLD_CLOTHES = 5;
+    private static final int TRANSACTION_THRESHOLD_TECH = 10;
+    private static final double FOOD_CASHBACK = 0.02;
+    private static final double CLOTHES_CASHBACK = 0.05;
+    private static final double TECH_CASHBACK = 0.10;
 
-    public NrOfTransactionsObserver(Bank bank, BankAccount bankAccount) {
+    public NrOfTransactionsObserver(final Bank bank, final BankAccount bankAccount) {
         this.bank = bank;
         this.bankAccount = bankAccount;
     }
 
     @Override
-    public void update(PaymentDetails paymentDetails) {
+    public void update(final PaymentDetails paymentDetails) {
         Commerciant commerciant = paymentDetails.getCommerciant();
-        if(commerciant == null) {
+        if (commerciant == null) {
             return;
         }
 
@@ -40,24 +47,25 @@ public class NrOfTransactionsObserver implements CashbackObserver {
 
         double convertedAmount = bank.convertCurrency(paymentDetails.getAmount(),
                 paymentDetails.getCurrency(), "RON");
-        if(commerciant.getType() == Commerciant.CashbackStrategy.NR_OF_TRANSACTIONS) {
+        if (commerciant.getType() == Commerciant.CashbackStrategy.NR_OF_TRANSACTIONS) {
             commerciant.setNrOfTransactions(commerciant.getNrOfTransactions() + 1);
-            if(bankAccount.getAccountType().equals("business")) {
+            if (bankAccount.getAccountType().equals("business")) {
                 BusinessAccount businessAccount = (BusinessAccount) bankAccount;
-                if(businessAccount.getUserRole(paymentDetails.getUser()) != BusinessAccount.UserRole.OWNER) {
+                if (businessAccount.getUserRole(paymentDetails.getUser())
+                        != BusinessAccount.UserRole.OWNER) {
                     commerciant.setAmountSpent(commerciant.getAmountSpent() + convertedAmount);
                     commerciant.addUser(paymentDetails.getUser());
                 }
             }
-            switch(commerciant.getNrOfTransactions()) {
-                case 2:
-                    bankAccount.addVoucher(new Voucher(0.02, FOOD));
+            switch (commerciant.getNrOfTransactions()) {
+                case TRANSACTION_THRESHOLD_FOOD:
+                    bankAccount.addVoucher(new Voucher(FOOD_CASHBACK, FOOD));
                     break;
-                case 5:
-                    bankAccount.addVoucher(new Voucher(0.05, CLOTHES));
+                case TRANSACTION_THRESHOLD_CLOTHES:
+                    bankAccount.addVoucher(new Voucher(CLOTHES_CASHBACK, CLOTHES));
                     break;
-                case 10:
-                    bankAccount.addVoucher(new Voucher(0.10, TECH));
+                case TRANSACTION_THRESHOLD_TECH:
+                    bankAccount.addVoucher(new Voucher(TECH_CASHBACK, TECH));
                     break;
                 default:
                     break;

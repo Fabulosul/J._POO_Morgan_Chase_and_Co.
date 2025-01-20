@@ -104,7 +104,7 @@ public final class SendMoney extends Command implements CommandInterface {
         }
        for (Commerciant commerciant : senderAccount.getCommerciants()) {
             if (commerciant.getName().equals(commmerciantName)) {
-                senderAccount.payOnline(bank, getAmount(), senderAccount.getCurrency());
+                senderAccount.payWithCommission(bank, getAmount(), senderAccount.getCurrency());
                 PaymentDetails paymentDetails = new PaymentDetails(getAmount(), senderAccount.getCurrency(),
                         commerciant, sender);
                 senderAccount.notifyCashbackObservers(paymentDetails);

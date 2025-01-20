@@ -5,11 +5,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Voucher {
+public final class Voucher {
     private double percentage;
     private Commerciant.Category category;
 
-    public Voucher(double percentage, Commerciant.Category category) {
+    public Voucher(final double percentage, final Commerciant.Category category) {
         this.percentage = percentage;
         this.category = category;
     }

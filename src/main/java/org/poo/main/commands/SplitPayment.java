@@ -112,7 +112,7 @@ public final class SplitPayment extends Command implements CommandInterface {
             if (bankAccount == null) {
                 return;
             }
-            bankAccount.payOnline(bank, splitAmount, getCurrency());
+            bankAccount.payWithCommission(bank, splitAmount, getCurrency());
             String formattedAmount = String.format("%.2f", getAmount());
             Transaction transaction = new Transaction
                     .TransactionBuilder(getTimestamp(), "Split payment of "

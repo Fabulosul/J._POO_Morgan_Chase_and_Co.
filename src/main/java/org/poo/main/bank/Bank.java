@@ -7,7 +7,11 @@ import org.poo.fileio.ExchangeInput;
 import org.poo.main.cashback.Commerciant;
 import org.poo.main.splitpayment.SplitPaymentDetails;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -47,7 +51,8 @@ public final class Bank {
         this.commerciants = commerciants;
         this.nameToCommerciantMap = new HashMap<>();
         for (CommerciantInput commerciant : commerciants) {
-            Commerciant newCommerciant = new Commerciant(commerciant.getCommerciant(), commerciant.getType(),
+            Commerciant newCommerciant = new Commerciant(commerciant.getCommerciant(),
+                    commerciant.getType(),
                     commerciant.getCashbackStrategy());
             nameToCommerciantMap.put(newCommerciant.getName(), newCommerciant);
         }
@@ -278,7 +283,7 @@ public final class Bank {
         splitPayments.remove(splitPaymentDetails);
     }
 
-    public void acceptSplitPayment(final User user, String splitPaymentType) {
+    public void acceptSplitPayment(final User user, final String splitPaymentType) {
         SplitPaymentDetails.SplitPaymentType paymentType;
         paymentType = splitPaymentType.equals("custom")
                 ? SplitPaymentDetails.SplitPaymentType.CUSTOM
@@ -294,7 +299,7 @@ public final class Bank {
         }
     }
 
-    public void rejectSplitPayment(final User user, String splitPaymentType) {
+    public void rejectSplitPayment(final User user, final String splitPaymentType) {
         SplitPaymentDetails.SplitPaymentType paymentType;
         paymentType = splitPaymentType.equals("custom")
                 ? SplitPaymentDetails.SplitPaymentType.CUSTOM

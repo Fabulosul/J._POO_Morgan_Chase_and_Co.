@@ -9,7 +9,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class Commerciant {
+public final class Commerciant {
     public enum Category {
         FOOD, CLOTHES, TECH, OTHER
     }
@@ -23,7 +23,7 @@ public class Commerciant {
     private int nrOfTransactions;
     private List<User> users;
 
-    public Commerciant(String name, String category, String type) {
+    public Commerciant(final String name, final String category, final String type) {
         this.name = name;
         this.category = switch (category) {
             case "Food" -> Category.FOOD;
@@ -41,10 +41,7 @@ public class Commerciant {
         this.users = new ArrayList<>();
     }
 
-    public void addUser(User user) {
+    public void addUser(final User user) {
         users.add(user);
     }
-
-
-
 }

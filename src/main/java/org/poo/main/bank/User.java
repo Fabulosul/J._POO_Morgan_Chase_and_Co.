@@ -6,7 +6,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.UserInput;
-import org.poo.main.serviceplans.*;
+import org.poo.main.serviceplans.GoldUserPlan;
+import org.poo.main.serviceplans.SilverUserPlan;
+import org.poo.main.serviceplans.StandardUserPlan;
+import org.poo.main.serviceplans.StudentPlan;
+import org.poo.main.serviceplans.UserPlan;
 
 
 import java.util.ArrayList;
@@ -32,6 +36,8 @@ public final class User {
     // An array of transactions that the user has made
     private ArrayNode transactionsReport;
     private int upgradeCounter;
+    public static final int CURRENT_YEAR = 2025;
+
 
 
     public User(final UserInput user) {
@@ -41,9 +47,10 @@ public final class User {
         String birthDate = user.getBirthDate();
         String[] values = birthDate.split("-");
         int year = Integer.parseInt(values[0]);
-        this.age = 2025 - year;
+        this.age = CURRENT_YEAR - year;
         this.occupation = user.getOccupation();
-        this.servicePlan = this.occupation.equals("student") ? new StudentPlan() : new StandardUserPlan();
+        this.servicePlan = this.occupation.equals("student")
+                ? new StudentPlan() : new StandardUserPlan();
         this.bankAccounts = new ArrayList<>();
         this.ibanToAccountMap = new HashMap<>();
         this.aliasToAccountMap = new HashMap<>();
@@ -152,12 +159,15 @@ public final class User {
             case "gold":
                 this.servicePlan = new GoldUserPlan();
                 break;
+            default:
+                break;
         }
     }
 
     public BankAccount findClassicAccountByCurrency(final String currency) {
         for (BankAccount account : bankAccounts) {
-            if (account.getCurrency().equals(currency) && account.getAccountType().equals("classic")) {
+            if (account.getCurrency().equals(currency)
+                    && account.getAccountType().equals("classic")) {
                 return account;
             }
         }

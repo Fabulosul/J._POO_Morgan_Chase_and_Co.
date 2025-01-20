@@ -3,7 +3,11 @@ package org.poo.main.commands;
 import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
-import org.poo.main.bank.*;
+import org.poo.main.bank.Bank;
+import org.poo.main.bank.BankAccount;
+import org.poo.main.bank.BusinessAccount;
+import org.poo.main.bank.Transaction;
+import org.poo.main.bank.User;
 
 @Getter
 @Setter
@@ -36,7 +40,7 @@ public final class AddFunds extends Command implements CommandInterface {
             if (userRole == null) {
                 return;
             }
-            if(userRole.equals(BusinessAccount.UserRole.EMPLOYEE)
+            if (userRole.equals(BusinessAccount.UserRole.EMPLOYEE)
             && ((BusinessAccount) bankAccount).getDepositLimit() < getAmount()) {
                 return;
             }

@@ -11,37 +11,36 @@ import java.util.List;
 
 @Getter
 @Setter
-public class Employee extends BusinessUser {
-    List<Card> createdCards;
+public final class Employee extends BusinessUser {
+    private List<Card> createdCards;
 
-    public Employee(String name, BusinessAccount businessAccount) {
+    public Employee(final String name, final BusinessAccount businessAccount) {
         super(name, businessAccount);
         this.createdCards = new ArrayList<>();
     }
 
 
     @Override
-    public boolean addNewAssociate(User user, String role) {
+    public void addNewAssociate(final User user, final String role) {
+    }
+
+    @Override
+    public boolean changeSpendingLimit(final double newLimit) {
         return false;
     }
 
     @Override
-    public boolean changeSpendingLimit(double newLimit) {
+    public boolean changeDepositLimit(final double newLimit) {
         return false;
     }
 
     @Override
-    public boolean changeDepositLimit(double newLimit) {
-        return false;
-    }
-
-    @Override
-    public void addCard(Card card) {
+    public void addCard(final Card card) {
         createdCards.add(card);
     }
 
     @Override
-    public void removeCard(Card card) {
+    public void removeCard(final Card card) {
         createdCards.remove(card);
     }
 }

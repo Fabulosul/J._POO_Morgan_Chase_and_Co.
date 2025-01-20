@@ -3,18 +3,17 @@ package org.poo.main.businessusers;
 import lombok.Getter;
 import lombok.Setter;
 import org.poo.main.bank.BusinessAccount;
-import org.poo.main.bank.Card;
 import org.poo.main.bank.User;
 
 @Getter
 @Setter
-public class Owner extends BusinessUser {
-    public Owner(String name, BusinessAccount businessAccount) {
+public final class Owner extends BusinessUser {
+    public Owner(final String name, final BusinessAccount businessAccount) {
         super(name, businessAccount);
     }
 
     @Override
-    public boolean addNewAssociate(User user, String role) {
+    public void addNewAssociate(final User user, final String role) {
         String username = user.getLastName() + " " + user.getFirstName();
         BusinessAccount businessAccount = getBusinessAccount();
         if (role.equals("manager")) {
@@ -26,18 +25,17 @@ public class Owner extends BusinessUser {
             businessAccount.getEmployees().add(employee);
             businessAccount.getBusinessUsers().put(username, employee);
         }
-        return true;
     }
 
     @Override
-    public boolean changeSpendingLimit(double newLimit) {
+    public boolean changeSpendingLimit(final double newLimit) {
         BusinessAccount businessAccount = getBusinessAccount();
         businessAccount.setSpendingLimit(newLimit);
         return true;
     }
 
     @Override
-    public boolean changeDepositLimit(double newLimit) {
+    public boolean changeDepositLimit(final double newLimit) {
         BusinessAccount businessAccount = getBusinessAccount();
         businessAccount.setDepositLimit(newLimit);
         return true;

@@ -45,7 +45,7 @@ public class CashWithdrawal extends Command implements CommandInterface {
 
         double amountWithCommission = bankAccount.calculateAmountWithCommission(bank, getAmount());
         if(bankAccount.hasSufficientFunds(amountWithCommission, withdrawalCurrency, bank)) {
-            bankAccount.payOnline(bank, getAmount(), withdrawalCurrency);
+            bankAccount.payWithCommission(bank, getAmount(), withdrawalCurrency);
             if (card.isOneTimeCard() && bankAccount.getBalance() == 0) {
                 bankAccount.removeCard(card, user);
                 Card newCard = new Card("oneTime");

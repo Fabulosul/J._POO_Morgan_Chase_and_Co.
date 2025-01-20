@@ -11,7 +11,7 @@ import org.poo.main.bank.User;
 
 @Getter
 @Setter
-public class AcceptSplitPayment extends Command implements CommandInterface {
+public final class AcceptSplitPayment extends Command implements CommandInterface {
     private Bank bank;
     private ArrayNode output;
 

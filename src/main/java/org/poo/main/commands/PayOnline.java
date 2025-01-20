@@ -7,10 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
 import org.poo.main.bank.*;
-import org.poo.main.businessusers.Owner;
 import org.poo.main.cashback.Commerciant;
 import org.poo.main.cashback.PaymentDetails;
-import org.poo.main.serviceplans.UserPlan;
 
 
 @Getter
@@ -82,7 +80,7 @@ public final class PayOnline extends Command implements CommandInterface {
         if(getAmount() <= 0) {
             return;
         }
-        boolean hasSufficientFunds = bankAccount.payOnline(bank, getAmount(), getCurrency());
+        boolean hasSufficientFunds = bankAccount.payWithCommission(bank, getAmount(), getCurrency());
         if (hasSufficientFunds) {
             registerTransaction(user, bankAccount, card, "Card payment");
             if (card.isOneTimeCard()) {

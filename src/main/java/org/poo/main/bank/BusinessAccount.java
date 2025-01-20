@@ -6,7 +6,7 @@ import org.poo.main.businessusers.BusinessUser;
 import org.poo.main.businessusers.Employee;
 import org.poo.main.businessusers.Manager;
 import org.poo.main.businessusers.Owner;
-import org.poo.main.cashback.Commerciant;
+
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,9 +27,11 @@ public class BusinessAccount extends BankAccount {
     private double spendingLimit;
     private double depositLimit;
     private Map<String, BusinessUser> businessUsers;
-    List<Transaction> businessTransactions;
+    private List<Transaction> businessTransactions;
+    public static final int INITIAL_SPENDING_LIMIT = 500;
+    public static final int INITIAL_DEPOSIT_LIMIT = 500;
 
-    public BusinessAccount(Bank bank, String currency, User user) {
+    public BusinessAccount(final Bank bank, final String currency, final User user) {
         super(bank, currency);
         setAccountType(AccountType.BUSINESS);
         String name = user.getLastName() + " " + user.getFirstName();
@@ -37,15 +39,15 @@ public class BusinessAccount extends BankAccount {
         this.managers = new ArrayList<>();
         this.employees = new ArrayList<>();
         this.spendingLimit =
-                bank.convertCurrency(500, "RON", currency);
+                bank.convertCurrency(INITIAL_SPENDING_LIMIT, "RON", currency);
         this.depositLimit =
-                bank.convertCurrency(500, "RON", currency);
+                bank.convertCurrency(INITIAL_DEPOSIT_LIMIT, "RON", currency);
         this.businessUsers = new HashMap<>();
         businessUsers.put(name, owner);
         this.businessTransactions = new ArrayList<>();
     }
 
-    public UserRole getUserRole(User user) {
+    public final UserRole getUserRole(final User user) {
         String username = user.getLastName() + " " + user.getFirstName();
         if (owner.getUsername().equals(username)) {
             return UserRole.OWNER;
@@ -63,12 +65,12 @@ public class BusinessAccount extends BankAccount {
         return null;
     }
 
-    public BusinessUser getBusinessUserByName(String username) {
+    public final BusinessUser getBusinessUserByName(final String username) {
         return businessUsers.get(username);
     }
 
 
-    public boolean changeDepositLimit(User user, double newLimit) {
+    public final boolean changeDepositLimit(final User user, final double newLimit) {
         if (getUserRole(user) == UserRole.OWNER) {
             setDepositLimit(newLimit);
             return true;
@@ -92,11 +94,11 @@ public class BusinessAccount extends BankAccount {
         businessUser.removeCard(card);
     }
 
-    public void addBusinessTransaction(final Transaction transaction) {
+    public final void addBusinessTransaction(final Transaction transaction) {
         businessTransactions.add(transaction);
     }
 
-    public boolean isBusinessUser(User user) {
+    public final boolean isBusinessUser(final User user) {
         return getUserRole(user) != null;
     }
 

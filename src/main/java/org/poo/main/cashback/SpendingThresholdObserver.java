@@ -11,19 +11,19 @@ import java.util.Iterator;
 
 @Getter
 @Setter
-public class SpendingThresholdObserver implements CashbackObserver {
+public final class SpendingThresholdObserver implements CashbackObserver {
     private Bank bank;
     private BankAccount bankAccount;
 
-    public SpendingThresholdObserver(Bank bank, BankAccount bankAccount) {
+    public SpendingThresholdObserver(final Bank bank, final BankAccount bankAccount) {
         this.bank = bank;
         this.bankAccount = bankAccount;
     }
 
     @Override
-    public void update(PaymentDetails paymentDetails) {
+    public void update(final PaymentDetails paymentDetails) {
         Commerciant commerciant = paymentDetails.getCommerciant();
-        if(commerciant == null) {
+        if (commerciant == null) {
             return;
         }
 
@@ -40,21 +40,29 @@ public class SpendingThresholdObserver implements CashbackObserver {
 
         double convertedAmount = bank.convertCurrency(paymentDetails.getAmount(),
                 paymentDetails.getCurrency(), "RON");
-        if(commerciant.getType() == Commerciant.CashbackStrategy.SPENDING_THRESHOLD) {
+        if (commerciant.getType() == Commerciant.CashbackStrategy.SPENDING_THRESHOLD) {
             commerciant.setNrOfTransactions(commerciant.getNrOfTransactions() + 1);
-            if(bankAccount.getAccountType().equals("business")) {
+            if (bankAccount.getAccountType().equals("business")) {
                 BusinessAccount businessAccount = (BusinessAccount) bankAccount;
-                if(businessAccount.getUserRole(paymentDetails.getUser()) != BusinessAccount.UserRole.OWNER) {
+                if (businessAccount.getUserRole(paymentDetails.getUser())
+                        != BusinessAccount.UserRole.OWNER) {
                     commerciant.setAmountSpent(commerciant.getAmountSpent() + convertedAmount);
                     commerciant.addUser(paymentDetails.getUser());
                 }
             }
 
             User user = bank.getUserByAccount(bankAccount.getIban());
-            bankAccount.setSpendingThresholdAmount(bankAccount.getSpendingThresholdAmount() + convertedAmount);
-            double cashbackPercentage = user.getServicePlan().getCashbackPercentage(bankAccount.getSpendingThresholdAmount());
+            if (user == null) {
+                return;
+            }
+            bankAccount.setSpendingThresholdAmount(bankAccount.getSpendingThresholdAmount()
+                    + convertedAmount);
+            double thresholdAmount = bankAccount.getSpendingThresholdAmount();
+            double cashbackPercentage = user.getServicePlan()
+                    .getCashbackPercentage(thresholdAmount);
             double cashback = convertedAmount * cashbackPercentage;
-            bankAccount.addMoney(bank.convertCurrency(cashback, "RON", bankAccount.getCurrency()));
+            bankAccount.addMoney(bank.convertCurrency(cashback, "RON",
+                    bankAccount.getCurrency()));
         }
     }
 }

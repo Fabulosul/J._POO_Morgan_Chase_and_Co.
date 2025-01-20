@@ -37,7 +37,7 @@ public class BankAccount {
         CLASSIC, SAVINGS, BUSINESS
     }
     private AccountType accountType;
-    List<Commerciant> commerciants;
+    private List<Commerciant> commerciants;
     private double spendingThresholdAmount;
 
 
@@ -141,8 +141,8 @@ public class BankAccount {
      *
      * @see Bank for the implementation of the convertCurrency method
      */
-    public final boolean payOnline(final Bank bank, final double amount,
-                                   final String paymentCurrency) {
+    public final boolean payWithCommission(final Bank bank, final double amount,
+                                           final String paymentCurrency) {
         double amountInRon = bank.convertCurrency(amount, paymentCurrency, "RON");
         double amountWithCommission = calculateAmountWithCommission(bank, amountInRon);
         double convertedAmountWithCommission = bank.convertCurrency(amountWithCommission,
@@ -151,10 +151,10 @@ public class BankAccount {
 
     }
 
-    public final boolean payWithoutCommission(final Bank bank, final double amount,
-                                                    final String paymentCurrency) {
+    public final void payWithoutCommission(final Bank bank, final double amount,
+                                           final String paymentCurrency) {
         double convertedAmount = bank.convertCurrency(amount, paymentCurrency, getCurrency());
-        return deductMoney(convertedAmount);
+        deductMoney(convertedAmount);
     }
 
     /**
@@ -199,12 +199,12 @@ public class BankAccount {
         return true;
     }
 
-    public final boolean sendMoneyWithoutCommission(final Bank bank, final BankAccount receiverAccount,
-                                                    final double amount) {
+    public final void sendMoneyWithoutCommission(final Bank bank, final BankAccount receiverAccount,
+                                                 final double amount) {
         double amountInRon = bank.convertCurrency(amount, currency, "RON");
         double convertedAmount = bank.convertCurrency(amountInRon, "RON", currency);
         if (convertedAmount > balance) {
-            return false;
+            return;
         }
 
         deductMoney(convertedAmount);
@@ -213,11 +213,11 @@ public class BankAccount {
         if (receiverAccount.getCurrency().equals(currency)) {
             receiverAccount.addMoney(amount);
         } else {
-            double receiverConvertedAmount = bank.convertCurrency(amount, currency, receiverAccount.getCurrency());
+            double receiverConvertedAmount =
+                    bank.convertCurrency(amount, currency, receiverAccount.getCurrency());
             receiverAccount.addMoney(receiverConvertedAmount);
         }
 
-        return true;
     }
 
     /**
@@ -259,34 +259,30 @@ public class BankAccount {
         transactions.add(transactionNode);
     }
 
-    public double calculateAmountWithCommission(Bank bank, final double amount) {
+    public final double calculateAmountWithCommission(final Bank bank, final double amount) {
         User user = bank.getUserByAccount(iban);
         if (user == null) {
-            throw new IllegalArgumentException("User not found");
+            return amount;
         }
         double commission = user.getServicePlan().calculateCommission(amount);
         return amount + commission;
     }
 
-    public void addCashbackObserver(final CashbackObserver observer) {
+    public final void addCashbackObserver(final CashbackObserver observer) {
         cashbackObservers.add(observer);
     }
 
-    public void removeCashbackObserver(final CashbackObserver observer) {
+    public final void removeCashbackObserver(final CashbackObserver observer) {
         cashbackObservers.remove(observer);
     }
 
-    public void notifyCashbackObservers(PaymentDetails paymentDetails) {
+    public final void notifyCashbackObservers(final PaymentDetails paymentDetails) {
         for (CashbackObserver observer : cashbackObservers) {
             observer.update(paymentDetails);
         }
     }
 
-    public void addVoucher(final Voucher voucher) {
+    public final void addVoucher(final Voucher voucher) {
         cashbackVouchers.add(voucher);
-    }
-
-    public void removeVoucher(final Voucher voucher) {
-        cashbackVouchers.remove(voucher);
     }
 }

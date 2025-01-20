@@ -152,8 +152,8 @@ public final class Transaction {
             this.description = description;
         }
 
-        public TransactionBuilder username(final String username) {
-            this.username = username;
+        public TransactionBuilder username(final String userName) {
+            this.username = userName;
             return this;
         }
 
@@ -323,18 +323,18 @@ public final class Transaction {
             return this;
         }
 
-        public TransactionBuilder currencyWithoutAmount(final boolean currencyWithoutAmount) {
-            this.currencyWithoutAmount = currencyWithoutAmount;
+        public TransactionBuilder currencyWithoutAmount(final boolean currencyNoAmount) {
+            this.currencyWithoutAmount = currencyNoAmount;
             return this;
         }
 
-        public TransactionBuilder classicAccountIban(final String classicAccountIban) {
-            this.classicAccountIban = classicAccountIban;
+        public TransactionBuilder classicAccountIban(final String iban) {
+            this.classicAccountIban = iban;
             return this;
         }
 
-        public TransactionBuilder savingsAccountIban(final String savingsAccountIban) {
-            this.savingsAccountIban = savingsAccountIban;
+        public TransactionBuilder savingsAccountIban(final String iban) {
+            this.savingsAccountIban = iban;
             return this;
         }
 

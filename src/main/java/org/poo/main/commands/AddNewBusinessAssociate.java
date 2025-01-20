@@ -7,15 +7,14 @@ import org.poo.main.bank.Bank;
 import org.poo.main.bank.BankAccount;
 import org.poo.main.bank.BusinessAccount;
 import org.poo.main.bank.User;
-import org.poo.main.businessusers.BusinessUser;
 import org.poo.main.businessusers.Owner;
 
 @Getter
 @Setter
-public class AddNewBusinessAssociate extends Command implements CommandInterface {
+public final class AddNewBusinessAssociate extends Command implements CommandInterface {
     private Bank bank;
 
-    public AddNewBusinessAssociate(Bank bank, CommandInput command) {
+    public AddNewBusinessAssociate(final Bank bank, final CommandInput command) {
         super(command);
         this.bank = bank;
     }
@@ -30,7 +29,7 @@ public class AddNewBusinessAssociate extends Command implements CommandInterface
         if (businessAccount == null) {
             return;
         }
-        if(!businessAccount.getAccountType().equals("business")) {
+        if (!businessAccount.getAccountType().equals("business")) {
             return;
         }
         Owner owner = ((BusinessAccount) businessAccount).getOwner();
