@@ -11,7 +11,7 @@ import org.poo.main.businessusers.BusinessUser;
 
 @Getter
 @Setter
-public class ChangeDepositLimit extends Command implements CommandInterface {
+public final class ChangeDepositLimit extends Command implements CommandInterface {
     private Bank bank;
 
     public ChangeDepositLimit(final Bank bank, final CommandInput command) {
@@ -29,15 +29,11 @@ public class ChangeDepositLimit extends Command implements CommandInterface {
         if (businessAccount == null) {
             return;
         }
-        if(!businessAccount.getAccountType().equals("business")) {
-            return;
-        }
-        String username = user.getLastName() + " " + user.getFirstName();
-        BusinessUser businessUser = ((BusinessAccount) businessAccount).getBusinessUserByName(username);
-        if(businessUser.changeDepositLimit(getAmount())) {
-            // do nothing
-        } else {
-            return;
+        if (businessAccount.getAccountType().equals("business")) {
+            String username = user.getLastName() + " " + user.getFirstName();
+            BusinessUser businessUser = ((BusinessAccount) businessAccount)
+                    .getBusinessUserByName(username);
+            businessUser.changeDepositLimit(getAmount());
         }
     }
 }

@@ -11,12 +11,13 @@ import org.poo.main.bank.User;
 
 @Getter
 @Setter
-public class WithdrawSavings extends Command implements CommandInterface {
+public final class WithdrawSavings extends Command implements CommandInterface {
     private Bank bank;
     private ArrayNode output;
+    private static final int MINIMUM_AGE = 21;
 
 
-    public WithdrawSavings(final Bank bank, final CommandInput command, ArrayNode output) {
+    public WithdrawSavings(final Bank bank, final CommandInput command, final ArrayNode output) {
         super(command);
         this.bank = bank;
         this.output = output;
@@ -28,7 +29,7 @@ public class WithdrawSavings extends Command implements CommandInterface {
         if (user == null) {
             return;
         }
-        if (user.getAge() < 21) {
+        if (user.getAge() < MINIMUM_AGE) {
             registerTransactionError(null, user, "You don't have the minimum age required.");
             return;
         }
@@ -62,7 +63,8 @@ public class WithdrawSavings extends Command implements CommandInterface {
         user.addTransaction(transaction);
     }
 
-    public void registerTransactionError(BankAccount bankAccount, User user, String message) {
+    public void registerTransactionError(final BankAccount bankAccount, final User user,
+                                         final String message) {
         Transaction transaction = new Transaction
                 .TransactionBuilder(getTimestamp(), message)
                 .build();

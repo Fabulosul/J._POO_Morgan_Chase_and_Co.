@@ -6,7 +6,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
-import org.poo.main.bank.*;
+import org.poo.main.bank.Bank;
+import org.poo.main.bank.BankAccount;
+import org.poo.main.bank.BusinessAccount;
+import org.poo.main.bank.Card;
+import org.poo.main.bank.Transaction;
+import org.poo.main.bank.User;
 import org.poo.main.cashback.Commerciant;
 import org.poo.main.cashback.PaymentDetails;
 
@@ -16,6 +21,8 @@ import org.poo.main.cashback.PaymentDetails;
 public final class PayOnline extends Command implements CommandInterface {
     private Bank bank;
     private ArrayNode output;
+    private static final int GOLD_AUTO_UPGRADE_THRESHOLD = 300;
+    private static final long NUM_TRANSACTIONS_AUTO_UPGRADE = 5;
 
     public PayOnline(final Bank bank, final CommandInput command, final ArrayNode output) {
         super(command);
@@ -56,7 +63,7 @@ public final class PayOnline extends Command implements CommandInterface {
             return;
         }
 
-        if(bankAccount.getAccountType().equals("business")
+        if (bankAccount.getAccountType().equals("business")
                 && !((BusinessAccount) bankAccount).isBusinessUser(user)) {
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode objectNode = mapper.createObjectNode();
@@ -77,10 +84,11 @@ public final class PayOnline extends Command implements CommandInterface {
             registerTransaction(user, bankAccount, card, "The card is frozen");
             return;
         }
-        if(getAmount() <= 0) {
+        if (getAmount() <= 0) {
             return;
         }
-        boolean hasSufficientFunds = bankAccount.payWithCommission(bank, getAmount(), getCurrency());
+        boolean hasSufficientFunds =
+                bankAccount.payWithCommission(bank, getAmount(), getCurrency());
         if (hasSufficientFunds) {
             registerTransaction(user, bankAccount, card, "Card payment");
             if (card.isOneTimeCard()) {
@@ -94,17 +102,18 @@ public final class PayOnline extends Command implements CommandInterface {
             }
             for (Commerciant commerciant : bankAccount.getCommerciants()) {
                 if (commerciant.getName().equals(getCommerciant())) {
-                    PaymentDetails paymentDetails = new PaymentDetails(getAmount(), getCurrency(), commerciant, user);
+                    PaymentDetails paymentDetails =
+                            new PaymentDetails(getAmount(), getCurrency(), commerciant, user);
                     bankAccount.notifyCashbackObservers(paymentDetails);
                     break;
                 }
             }
             double amountInRon = bank.convertCurrency(getAmount(), getCurrency(),
                     "RON");
-            if(user.getServicePlan().getPlanName().equals("silver")
-                    && amountInRon >= 300) {
+            if (user.getServicePlan().getPlanName().equals("silver")
+                    && amountInRon >= GOLD_AUTO_UPGRADE_THRESHOLD) {
                 user.setUpgradeCounter(user.getUpgradeCounter() + 1);
-                if(user.getUpgradeCounter() == 5) {
+                if (user.getUpgradeCounter() == NUM_TRANSACTIONS_AUTO_UPGRADE) {
                     user.changeServicePlan("gold");
                     Transaction transaction = new Transaction
                             .TransactionBuilder(getTimestamp(), "Upgrade plan")
@@ -151,7 +160,7 @@ public final class PayOnline extends Command implements CommandInterface {
                         .build();
                 user.addTransaction(transaction);
                 bankAccount.addTransaction(transaction);
-                if(bankAccount.getAccountType().equals("business")) {
+                if (bankAccount.getAccountType().equals("business")) {
                     Transaction businessTransaction = new Transaction
                             .TransactionBuilder(getTimestamp(), "spend")
                             .amount(convertedAmount)

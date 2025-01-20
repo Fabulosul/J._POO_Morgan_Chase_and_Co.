@@ -10,7 +10,6 @@ import org.poo.main.bank.Bank;
 import org.poo.main.bank.User;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 @Getter
@@ -47,7 +46,7 @@ public final class PrintTransactions extends Command implements CommandInterface
         output.add(objectNode);
     }
 
-    public void sortTransactionsByTimestamp(ArrayNode transactionsReport) {
+    private void sortTransactionsByTimestamp(final ArrayNode transactionsReport) {
         List<ObjectNode> objectNodeList = new ArrayList<>();
         for (int i = 0; i < transactionsReport.size(); i++) {
             objectNodeList.add((ObjectNode) transactionsReport.get(i));

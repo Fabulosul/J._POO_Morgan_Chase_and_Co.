@@ -6,16 +6,20 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
-import org.poo.main.bank.*;
+import org.poo.main.bank.Bank;
+import org.poo.main.bank.BankAccount;
+import org.poo.main.bank.Card;
+import org.poo.main.bank.User;
+import org.poo.main.bank.Transaction;
 
 @Getter
 @Setter
-public class CashWithdrawal extends Command implements CommandInterface {
-    private final String withdrawalCurrency = "RON";
+public final class CashWithdrawal extends Command implements CommandInterface {
     private Bank bank;
     private ArrayNode output;
+    private static final String WITHDRAWAL_CURRENCY = "RON";
 
-    public CashWithdrawal(final Bank bank, final CommandInput command, ArrayNode output) {
+    public CashWithdrawal(final Bank bank, final CommandInput command, final ArrayNode output) {
         super(command);
         this.bank = bank;
         this.output = output;
@@ -24,7 +28,7 @@ public class CashWithdrawal extends Command implements CommandInterface {
 
     @Override
     public void execute() {
-        if(getEmail() == null) {
+        if (getEmail() == null) {
             return;
         }
         User user = bank.getUserByMail(getEmail());
@@ -44,8 +48,8 @@ public class CashWithdrawal extends Command implements CommandInterface {
         }
 
         double amountWithCommission = bankAccount.calculateAmountWithCommission(bank, getAmount());
-        if(bankAccount.hasSufficientFunds(amountWithCommission, withdrawalCurrency, bank)) {
-            bankAccount.payWithCommission(bank, getAmount(), withdrawalCurrency);
+        if (bankAccount.hasSufficientFunds(amountWithCommission, WITHDRAWAL_CURRENCY, bank)) {
+            bankAccount.payWithCommission(bank, getAmount(), WITHDRAWAL_CURRENCY);
             if (card.isOneTimeCard() && bankAccount.getBalance() == 0) {
                 bankAccount.removeCard(card, user);
                 Card newCard = new Card("oneTime");
@@ -62,7 +66,7 @@ public class CashWithdrawal extends Command implements CommandInterface {
         }
     }
 
-    public void registerTransactionError(User user, String description) {
+    public void registerTransactionError(final User user, final String description) {
         Transaction transaction = new Transaction
                 .TransactionBuilder(getTimestamp(),
                 description)
@@ -70,7 +74,7 @@ public class CashWithdrawal extends Command implements CommandInterface {
         user.addTransaction(transaction);
     }
 
-    public void addErrorToOutput(String description) {
+    public void addErrorToOutput(final String description) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode objectNode = mapper.createObjectNode();
         objectNode.put("command", "cashWithdrawal");

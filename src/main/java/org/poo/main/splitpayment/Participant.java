@@ -18,7 +18,7 @@ public class Participant {
     private double amount;
     private PaymentStatus paymentStatus;
 
-    public Participant(User user, BankAccount bankAccount, double amount) {
+    public Participant(final User user, final BankAccount bankAccount, final double amount) {
         this.user = user;
         this.bankAccount = bankAccount;
         this.amount = amount;

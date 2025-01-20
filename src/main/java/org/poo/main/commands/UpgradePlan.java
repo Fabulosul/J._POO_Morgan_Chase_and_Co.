@@ -16,30 +16,33 @@ import java.util.Map;
 
 @Getter
 @Setter
-public class UpgradePlan extends Command implements CommandInterface {
+public final class UpgradePlan extends Command implements CommandInterface {
     private Bank bank;
     private ArrayNode output;
     private Map<String, Map<String, Double>> upgradePlanFees;
-    private final String feeCurrency = "RON";
+    private static final String FEE_CURRENCY = "RON";
+    private static final double STANDARD_TO_SILVER_FEE = 100.0;
+    private static final double SILVER_TO_GOLD_FEE = 250.0;
+    private static final double STANDARD_TO_GOLD_FEE = 350.0;
 
-    public UpgradePlan(Bank bank, CommandInput command, ArrayNode output) {
+    public UpgradePlan(final Bank bank, final CommandInput command, final ArrayNode output) {
         super(command);
         this.bank = bank;
         this.output = output;
         this.upgradePlanFees = new HashMap<>();
 
         Map<String, Double> studentPlanFees = new HashMap<>();
-        studentPlanFees.put("silver", 100.0);
-        studentPlanFees.put("gold", 350.0);
+        studentPlanFees.put("silver", STANDARD_TO_SILVER_FEE);
+        studentPlanFees.put("gold", STANDARD_TO_GOLD_FEE);
         upgradePlanFees.put("student", studentPlanFees);
 
         Map<String, Double> standardUserPlanFees = new HashMap<>();
-        standardUserPlanFees.put("silver", 100.0);
-        standardUserPlanFees.put("gold", 350.0);
+        standardUserPlanFees.put("silver", STANDARD_TO_SILVER_FEE);
+        standardUserPlanFees.put("gold", STANDARD_TO_GOLD_FEE);
         upgradePlanFees.put("standard", standardUserPlanFees);
 
         Map<String, Double> silverUserPlanFees = new HashMap<>();
-        silverUserPlanFees.put("gold", 250.0);
+        silverUserPlanFees.put("gold", SILVER_TO_GOLD_FEE);
         upgradePlanFees.put("silver", silverUserPlanFees);
     }
 
@@ -66,19 +69,20 @@ public class UpgradePlan extends Command implements CommandInterface {
             registerTransactionError(null, user, "Account not found");
             return;
         }
-        if(user.getServicePlan().getPlanName().equals(getNewPlanType())) {
-            registerTransactionError(bankAccount, user, "The user already has the " +
-                    user.getServicePlan().getPlanName() + " plan.");
+        if (user.getServicePlan().getPlanName().equals(getNewPlanType())) {
+            registerTransactionError(bankAccount, user, "The user already has the "
+                    + user.getServicePlan().getPlanName() + " plan.");
             return;
         }
-        if(!user.getServicePlan().canUpgradePlan(getNewPlanType())) {
+        if (!user.getServicePlan().canUpgradePlan(getNewPlanType())) {
             registerTransactionError(bankAccount, user, "You cannot downgrade your plan.");
             return;
         }
 
         double upgradeFee = getUpgradeFee(user.getServicePlan().getPlanName(), getNewPlanType());
-        if(bankAccount.hasSufficientFunds(upgradeFee, feeCurrency, bank)) {
-            double convertedFee = bank.convertCurrency(upgradeFee, feeCurrency, bankAccount.getCurrency());
+        if (bankAccount.hasSufficientFunds(upgradeFee, FEE_CURRENCY, bank)) {
+            double convertedFee =
+                    bank.convertCurrency(upgradeFee, FEE_CURRENCY, bankAccount.getCurrency());
             bankAccount.deductMoney(convertedFee);
             user.changeServicePlan(getNewPlanType());
             Transaction transaction = new Transaction
@@ -94,11 +98,12 @@ public class UpgradePlan extends Command implements CommandInterface {
 
     }
 
-    public double getUpgradeFee(String oldPlanName, String newPlanName) {
+    public double getUpgradeFee(final String oldPlanName, final String newPlanName) {
         return upgradePlanFees.get(oldPlanName).get(newPlanName);
     }
 
-    public void registerTransactionError(BankAccount bankAccount, User user, String message) {
+    public void registerTransactionError(final BankAccount bankAccount, final User user,
+                                         final String message) {
         Transaction transaction = new Transaction
                 .TransactionBuilder(getTimestamp(), message)
                 .build();
@@ -107,5 +112,4 @@ public class UpgradePlan extends Command implements CommandInterface {
             bankAccount.addTransaction(transaction);
         }
     }
-
 }

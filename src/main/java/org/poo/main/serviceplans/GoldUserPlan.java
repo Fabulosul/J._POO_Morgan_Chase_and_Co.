@@ -1,9 +1,12 @@
 package org.poo.main.serviceplans;
 
-public class GoldUserPlan implements UserPlan{
+public final class GoldUserPlan implements UserPlan {
+    private static final double FIRST_LEVEL_CASHBACK = 0.05;
+    private static final double SECOND_LEVEL_CASHBACK = 0.0055;
+    private static final double THIRD_LEVEL_CASHBACK = 0.007;
 
     @Override
-    public double calculateCommission(double amount) {
+    public double calculateCommission(final double amount) {
         double commission = 0;
         return amount * commission;
     }
@@ -14,20 +17,20 @@ public class GoldUserPlan implements UserPlan{
     }
 
     @Override
-    public boolean canUpgradePlan(String planName) {
+    public boolean canUpgradePlan(final String planName) {
         return false;
     }
 
     @Override
-    public double getCashbackPercentage(double amountSpent) {
-        if (amountSpent >= 100 && amountSpent < 300) {
-            return 0.005;
+    public double getCashbackPercentage(final double amountSpent) {
+        if (amountSpent >= FIRST_THRESHOLD && amountSpent < SECOND_THRESHOLD) {
+            return FIRST_LEVEL_CASHBACK;
         }
-        if (amountSpent >= 300 && amountSpent < 500) {
-            return 0.0055;
+        if (amountSpent >= SECOND_THRESHOLD && amountSpent < THIRD_THRESHOLD) {
+            return SECOND_LEVEL_CASHBACK;
         }
-        if (amountSpent >= 500) {
-            return 0.007;
+        if (amountSpent >= THIRD_THRESHOLD) {
+            return THIRD_LEVEL_CASHBACK;
         }
         return 0;
     }

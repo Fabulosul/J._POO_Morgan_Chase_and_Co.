@@ -12,15 +12,15 @@ import org.poo.main.bank.BankAccount;
 import org.poo.main.bank.BusinessAccount;
 import org.poo.main.bank.User;
 import org.poo.main.businessusers.BusinessUser;
-import org.poo.main.businessusers.Owner;
 
 @Getter
 @Setter
-public class ChangeSpendingLimit extends Command implements CommandInterface {
+public final class ChangeSpendingLimit extends Command implements CommandInterface {
     private Bank bank;
     private ArrayNode output;
 
-    public ChangeSpendingLimit(final Bank bank, final CommandInput command, final ArrayNode output) {
+    public ChangeSpendingLimit(final Bank bank, final CommandInput command,
+                               final ArrayNode output) {
         super(command);
         this.bank = bank;
         this.output = output;
@@ -36,7 +36,7 @@ public class ChangeSpendingLimit extends Command implements CommandInterface {
         if (businessAccount == null) {
             return;
         }
-        if(!businessAccount.getAccountType().equals("business")) {
+        if (!businessAccount.getAccountType().equals("business")) {
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode objectNode = mapper.createObjectNode();
 
@@ -53,8 +53,9 @@ public class ChangeSpendingLimit extends Command implements CommandInterface {
             return;
         }
         String username = user.getLastName() + " " + user.getFirstName();
-        BusinessUser businessUser = ((BusinessAccount) businessAccount).getBusinessUserByName(username);
-        if(!businessUser.changeSpendingLimit(getAmount())) {
+        BusinessUser businessUser = ((BusinessAccount) businessAccount)
+                .getBusinessUserByName(username);
+        if (!businessUser.changeSpendingLimit(getAmount())) {
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode objectNode = mapper.createObjectNode();
 
@@ -69,6 +70,5 @@ public class ChangeSpendingLimit extends Command implements CommandInterface {
 
             output.add(objectNode);
         }
-
     }
 }

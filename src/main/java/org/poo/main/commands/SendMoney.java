@@ -7,7 +7,11 @@ import lombok.Getter;
 import lombok.Setter;
 import org.poo.fileio.CommandInput;
 import org.poo.fileio.CommerciantInput;
-import org.poo.main.bank.*;
+import org.poo.main.bank.Bank;
+import org.poo.main.bank.BankAccount;
+import org.poo.main.bank.BusinessAccount;
+import org.poo.main.bank.User;
+import org.poo.main.bank.Transaction;
 import org.poo.main.cashback.Commerciant;
 import org.poo.main.cashback.PaymentDetails;
 
@@ -16,6 +20,8 @@ import org.poo.main.cashback.PaymentDetails;
 public final class SendMoney extends Command implements CommandInterface {
     private Bank bank;
     private ArrayNode output;
+    private static final int GOLD_AUTO_UPGRADE_THRESHOLD = 300;
+    private static final long NUM_TRANSACTIONS_AUTO_UPGRADE = 5;
 
     public SendMoney(final Bank bank, final CommandInput command, final ArrayNode output) {
         super(command);
@@ -38,7 +44,7 @@ public final class SendMoney extends Command implements CommandInterface {
      */
     @Override
     public void execute() {
-        if(getReceiver().isEmpty()) {
+        if (getReceiver().isEmpty()) {
             addErrorToOutput("User not found");
             return;
         }
@@ -83,15 +89,26 @@ public final class SendMoney extends Command implements CommandInterface {
             Transaction businessTransaction = transactionBuilder.build();
             ((BusinessAccount) receiverAccount).addBusinessTransaction(businessTransaction);
         }
-        if(sender.getServicePlan().getPlanName().equals("silver")) {
+        double amountInRon = bank.convertCurrency(getAmount(), senderAccount.getCurrency(),
+                "RON");
+        if (sender.getServicePlan().getPlanName().equals("silver")
+                && amountInRon >= GOLD_AUTO_UPGRADE_THRESHOLD) {
             sender.setUpgradeCounter(sender.getUpgradeCounter() + 1);
-            if(sender.getUpgradeCounter() == 5) {
+            if (sender.getUpgradeCounter() == NUM_TRANSACTIONS_AUTO_UPGRADE) {
                 sender.changeServicePlan("gold");
+                Transaction transaction = new Transaction
+                        .TransactionBuilder(getTimestamp(), "Upgrade plan")
+                        .accountIban(senderAccount.getIban())
+                        .newPlanType("gold")
+                        .build();
+                sender.addTransaction(transaction);
+                senderAccount.addTransaction(transaction);
             }
         }
     }
 
-    public void handleCommerciantCase(User sender, BankAccount senderAccount, String commerciantIban) {
+    public void handleCommerciantCase(final User sender, final BankAccount senderAccount,
+                                      final String commerciantIban) {
         String commmerciantName = null;
         for (CommerciantInput commerciant : bank.getCommerciants()) {
             if (commerciant.getAccount().equals(commerciantIban)) {
@@ -105,7 +122,8 @@ public final class SendMoney extends Command implements CommandInterface {
        for (Commerciant commerciant : senderAccount.getCommerciants()) {
             if (commerciant.getName().equals(commmerciantName)) {
                 senderAccount.payWithCommission(bank, getAmount(), senderAccount.getCurrency());
-                PaymentDetails paymentDetails = new PaymentDetails(getAmount(), senderAccount.getCurrency(),
+                PaymentDetails paymentDetails =
+                        new PaymentDetails(getAmount(), senderAccount.getCurrency(),
                         commerciant, sender);
                 senderAccount.notifyCashbackObservers(paymentDetails);
                 Transaction senderTransaction = new Transaction
@@ -120,10 +138,10 @@ public final class SendMoney extends Command implements CommandInterface {
                 sender.addTransaction(senderTransaction);
                 double amountInRon = bank.convertCurrency(getAmount(), senderAccount.getCurrency(),
                         "RON");
-                if(sender.getServicePlan().getPlanName().equals("silver")
-                        && amountInRon >= 300) {
+                if (sender.getServicePlan().getPlanName().equals("silver")
+                        && amountInRon >= GOLD_AUTO_UPGRADE_THRESHOLD) {
                     sender.setUpgradeCounter(sender.getUpgradeCounter() + 1);
-                    if(sender.getUpgradeCounter() == 5) {
+                    if (sender.getUpgradeCounter() == NUM_TRANSACTIONS_AUTO_UPGRADE) {
                         sender.changeServicePlan("gold");
                         Transaction transaction = new Transaction
                                 .TransactionBuilder(getTimestamp(), "Upgrade plan")
@@ -211,7 +229,7 @@ public final class SendMoney extends Command implements CommandInterface {
         receiverAccount.addTransaction(receiverTransaction);
     }
 
-    public void addErrorToOutput(String description) {
+    public void addErrorToOutput(final String description) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode objectNode = mapper.createObjectNode();
         objectNode.put("command", "sendMoney");

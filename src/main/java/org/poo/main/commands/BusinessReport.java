@@ -19,11 +19,11 @@ import java.util.List;
 
 @Getter
 @Setter
-public class BusinessReport extends Command implements CommandInterface {
+public final class BusinessReport extends Command implements CommandInterface {
     private Bank bank;
     private ArrayNode output;
 
-    public BusinessReport(final Bank bank, CommandInput command, ArrayNode output) {
+    public BusinessReport(final Bank bank, final CommandInput command, final ArrayNode output) {
         super(command);
         this.bank = bank;
         this.output = output;
@@ -46,25 +46,25 @@ public class BusinessReport extends Command implements CommandInterface {
         output.add(report);
     }
 
-    public ObjectNode getReport(BusinessAccount businessAccount) {
-        if(getType().equals("transaction")) {
+    public ObjectNode getReport(final BusinessAccount businessAccount) {
+        if (getType().equals("transaction")) {
             return getTransactionReport(businessAccount);
         } else {
             return getCommerciantReport(businessAccount);
         }
     }
 
-    public ObjectNode getTransactionReport(BusinessAccount businessAccount) {
+    public ObjectNode getTransactionReport(final BusinessAccount businessAccount) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode report = mapper.createObjectNode();
         report.put("command", "businessReport");
 
-        ObjectNode output = mapper.createObjectNode();
-        output.put("IBAN", getAccount());
-        output.put("balance", businessAccount.getBalance());
-        output.put("currency", businessAccount.getCurrency());
-        output.put("spending limit", businessAccount.getSpendingLimit());
-        output.put("deposit limit", businessAccount.getDepositLimit());
+        ObjectNode outputNode = mapper.createObjectNode();
+        outputNode.put("IBAN", getAccount());
+        outputNode.put("balance", businessAccount.getBalance());
+        outputNode.put("currency", businessAccount.getCurrency());
+        outputNode.put("spending limit", businessAccount.getSpendingLimit());
+        outputNode.put("deposit limit", businessAccount.getDepositLimit());
 
         ArrayNode managers = mapper.createArrayNode();
         List<Manager> managersList = businessAccount.getManagers();
@@ -75,18 +75,19 @@ public class BusinessReport extends Command implements CommandInterface {
         double totalDeposited = 0;
         for (int i = 0; i < managersList.size(); i++) {
             ObjectNode manager = mapper.createObjectNode();
-            manager.put("username", businessAccount.getManagers().get(i).getUsername());
+            String managerUsername = businessAccount.getManagers().get(i).getUsername();
+            manager.put("username", managerUsername);
             double amountSpent =
-                    getAmountSpent(businessAccount, businessAccount.getManagers().get(i).getUsername());
+                    getAmountSpent(businessAccount, managerUsername);
             manager.put("spent", amountSpent);
             double amountDeposited =
-                    getAmountDeposited(businessAccount, businessAccount.getManagers().get(i).getUsername());
+                    getAmountDeposited(businessAccount, managerUsername);
             manager.put("deposited", amountDeposited);
             managers.add(manager);
             totalSpent += amountSpent;
             totalDeposited += amountDeposited;
         }
-        output.set("managers", managers);
+        outputNode.set("managers", managers);
 
         ArrayNode employees = mapper.createArrayNode();
         List<Employee> employeesList = businessAccount.getEmployees();
@@ -95,28 +96,29 @@ public class BusinessReport extends Command implements CommandInterface {
         }
         for (int i = 0; i < employeesList.size(); i++) {
             ObjectNode employee = mapper.createObjectNode();
-            employee.put("username", businessAccount.getEmployees().get(i).getUsername());
+            String employeeUsername = businessAccount.getEmployees().get(i).getUsername();
+            employee.put("username", employeeUsername);
             double amountSpent =
-                    getAmountSpent(businessAccount, businessAccount.getEmployees().get(i).getUsername());
+                    getAmountSpent(businessAccount, employeeUsername);
             employee.put("spent", amountSpent);
             double amountDeposited =
-                    getAmountDeposited(businessAccount, businessAccount.getEmployees().get(i).getUsername());
+                    getAmountDeposited(businessAccount, employeeUsername);
             employee.put("deposited", amountDeposited);
             employees.add(employee);
             totalSpent += amountSpent;
             totalDeposited += amountDeposited;
         }
-        output.set("employees", employees);
-        output.put("total spent", totalSpent);
-        output.put("total deposited", totalDeposited);
-        output.put("statistics type", "transaction");
+        outputNode.set("employees", employees);
+        outputNode.put("total spent", totalSpent);
+        outputNode.put("total deposited", totalDeposited);
+        outputNode.put("statistics type", "transaction");
 
-        report.set("output", output);
+        report.set("output", outputNode);
         report.put("timestamp", getTimestamp());
         return report;
     }
 
-    public ObjectNode getCommerciantReport(BusinessAccount businessAccount) {
+    public ObjectNode getCommerciantReport(final BusinessAccount businessAccount) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode report = mapper.createObjectNode();
         report.put("command", "businessReport");
@@ -135,8 +137,12 @@ public class BusinessReport extends Command implements CommandInterface {
         }
 
         commerciants.sort((c1, c2) -> {
-            if (c1.getName() == null) return -1;
-            if (c2.getName() == null) return 1;
+            if (c1.getName() == null) {
+                return -1;
+            }
+            if (c2.getName() == null) {
+                return 1;
+            }
             return c1.getName().compareToIgnoreCase(c2.getName());
         });
 
@@ -173,7 +179,7 @@ public class BusinessReport extends Command implements CommandInterface {
             commerciant.set("employees", employeesArray);
 
             commerciant.put("total received", commerciants.get(i).getAmountSpent());
-            if(commerciants.get(i).getAmountSpent() > 0) {
+            if (commerciants.get(i).getAmountSpent() > 0) {
                 commerciantsArray.add(commerciant);
             }
         }
@@ -187,7 +193,7 @@ public class BusinessReport extends Command implements CommandInterface {
         return report;
     }
 
-    public double getAmountSpent(BusinessAccount businessAccount, String username) {
+    public double getAmountSpent(final BusinessAccount businessAccount, final String username) {
         double amountSpent = 0;
         for (int i = 0; i < businessAccount.getBusinessTransactions().size(); i++) {
             if (businessAccount.getBusinessTransactions().get(i).getUsername().equals(username)
@@ -198,7 +204,7 @@ public class BusinessReport extends Command implements CommandInterface {
         return amountSpent;
     }
 
-    public double getAmountDeposited(BusinessAccount businessAccount, String username) {
+    public double getAmountDeposited(final BusinessAccount businessAccount, final String username) {
         double amountDeposited = 0;
         for (int i = 0; i < businessAccount.getBusinessTransactions().size(); i++) {
             if (businessAccount.getBusinessTransactions().get(i).getUsername().equals(username)
