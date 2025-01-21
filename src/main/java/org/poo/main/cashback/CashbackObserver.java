@@ -1,10 +1,10 @@
 package org.poo.main.cashback;
 
+import org.poo.main.bank.Bank;
 import org.poo.main.bankaccounts.BankAccount;
 import org.poo.main.bankaccounts.BusinessAccount;
 
 import java.util.Iterator;
-import java.util.List;
 
 public interface CashbackObserver {
     /**
@@ -19,21 +19,23 @@ public interface CashbackObserver {
      * Method used to check if any of the available vouchers can be used
      * for the current payment and if so, to add the cashback to the account.
      *
-     * @param bankAccount -> the bank account of the user
+     * @param bank           -> the bank used for the conversion
+     * @param bankAccount    -> the bank account of the user
      * @param paymentDetails -> the details of the payment
-     * @param commerciant -> the commerciant to which the payment was made
+     * @param commerciant    -> the commerciant to which the payment was made
      */
-    default List<Voucher> processVouchers(BankAccount bankAccount, PaymentDetails paymentDetails,
-                                          Commerciant commerciant) {
+    default void processVouchers(Bank bank, BankAccount bankAccount, PaymentDetails paymentDetails,
+                                 Commerciant commerciant) {
         Iterator<Voucher> iterator = bankAccount.getCashbackVouchers().iterator();
         while (iterator.hasNext()) {
             Voucher voucher = iterator.next();
             if (voucher.getCategory() == commerciant.getCategory()) {
-                bankAccount.addMoney(paymentDetails.getAmount() * voucher.getPercentage());
+                double convertedAmount = bank.convertCurrency(paymentDetails.getAmount(),
+                        paymentDetails.getCurrency(), bankAccount.getCurrency());
+                bankAccount.addMoney(convertedAmount * voucher.getPercentage());
                 iterator.remove();
             }
         }
-        return bankAccount.getCashbackVouchers();
     }
 
     /**

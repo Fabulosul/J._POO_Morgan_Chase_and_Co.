@@ -41,7 +41,7 @@ public final class NrOfTransactionsObserver implements CashbackObserver {
             return;
         }
 
-        processVouchers(bankAccount, paymentDetails, commerciant);
+        processVouchers(bank, bankAccount, paymentDetails, commerciant);
 
         double convertedAmount = bank.convertCurrency(paymentDetails.getAmount(),
                 paymentDetails.getCurrency(), "RON");

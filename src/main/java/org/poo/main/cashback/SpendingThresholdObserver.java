@@ -4,12 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.poo.main.bank.Bank;
 import org.poo.main.bankaccounts.BankAccount;
-import org.poo.main.bankaccounts.BusinessAccount;
 import org.poo.main.user.User;
-
-
-
-import java.util.Iterator;
 
 @Getter
 @Setter
@@ -22,6 +17,17 @@ public final class SpendingThresholdObserver implements CashbackObserver {
         this.bankAccount = bankAccount;
     }
 
+    /**
+     * Method used to add cashback to the account based on the amount spent
+     * on certain categories of commerciants.
+     * It starts by processing the vouchers that can be used for the payment
+     * and then updates the amount spent by the user and the number of transactions
+     * made to the commerciant.
+     * Finally, it adds the cashback to the user's account based on the amount spent
+     * if it is the case.
+     *
+     * @param paymentDetails -> the details of the payment
+     */
     @Override
     public void update(final PaymentDetails paymentDetails) {
         Commerciant commerciant = paymentDetails.getCommerciant();
@@ -29,29 +35,12 @@ public final class SpendingThresholdObserver implements CashbackObserver {
             return;
         }
 
-        Iterator<Voucher> iterator = bankAccount.getCashbackVouchers().iterator();
-        while (iterator.hasNext()) {
-            Voucher voucher = iterator.next();
-            if (voucher.getCategory() == commerciant.getCategory()) {
-                double convertedAmount = bank.convertCurrency(paymentDetails.getAmount(),
-                        paymentDetails.getCurrency(), bankAccount.getCurrency());
-                bankAccount.addMoney(convertedAmount * voucher.getPercentage());
-                iterator.remove();
-            }
-        }
+        processVouchers(bank, bankAccount, paymentDetails, commerciant);
 
         double convertedAmount = bank.convertCurrency(paymentDetails.getAmount(),
                 paymentDetails.getCurrency(), "RON");
         if (commerciant.getCashbackStrategy() == Commerciant.CashbackStrategy.SPENDING_THRESHOLD) {
-            commerciant.setNrOfTransactions(commerciant.getNrOfTransactions() + 1);
-            if (bankAccount.getAccountType().equals("business")) {
-                BusinessAccount businessAccount = (BusinessAccount) bankAccount;
-                if (businessAccount.getUserRole(paymentDetails.getUser())
-                        != BusinessAccount.UserRole.OWNER) {
-                    commerciant.setAmountSpent(commerciant.getAmountSpent() + convertedAmount);
-                    commerciant.addUser(paymentDetails.getUser());
-                }
-            }
+            processPayment(paymentDetails, commerciant, convertedAmount, bankAccount);
 
             User user = bank.getUserByAccount(bankAccount.getIban());
             if (user == null) {
