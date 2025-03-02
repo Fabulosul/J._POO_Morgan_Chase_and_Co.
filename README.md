@@ -1,8 +1,7 @@
 **Tudor Robert-Fabian**
 **Anul 2024-2025**
-**Grupa 322CAa**
 
-# Proiect Etapa 2 - J. POO Morgan Chase & Co.
+# J. POO Morgan Chase & Co. Project
 
 ## Description:
 
@@ -192,17 +191,6 @@ functionalities.
 make it easier for a future reader to understand the implementation of the code.
 
 </br>
-
-## Conclusion:
-
-* This second part of the assignment was a great opportunity to understand how important is to write
-modular and scalable code because if the code is not written in a good way, it can be very hard to
-add new functionalities. However, by using the concepts learned in the first 9 laboratories, I was
-able to refactorize the code from the first stage of the project and to add the new implementations
-required in this stage. It is important to mention that the project is meant to be extended in the 
-future and that is why I split the code into multiple packages and used design patterns like 
-Command, Factory, Builder, Observer and Strategy, to ensure flexibility.
-
 
 
 
